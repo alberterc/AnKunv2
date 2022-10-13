@@ -23,13 +23,6 @@ import com.radx.ankunv2.ui.theme.AnKunv2Theme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Hide the status bar.
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-        // Remember that you should never show the action bar if the
-        // status bar is hidden, so hide that too if necessary.
-        actionBar?.hide()
-
         setContent {
             AnKunApp()
         }
@@ -97,8 +90,6 @@ fun BottomNavigationBar(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnKunApp() {
-//    val systemUIController: SystemUiController = rememberSystemUiController()
-//    systemUIController.isStatusBarVisible = false
     val navController = rememberNavController()
 
     AnKunv2Theme {
