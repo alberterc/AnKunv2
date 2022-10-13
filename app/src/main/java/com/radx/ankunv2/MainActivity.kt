@@ -1,8 +1,6 @@
 package com.radx.ankunv2
 
-import android.content.res.Configuration
 import android.os.Bundle
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -104,15 +102,7 @@ fun AnKunApp() {
     }
 }
 
-@Preview(
-    name = "Light Mode",
-    showBackground = true
-)
-@Preview(
-    name = "Dark Mode",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true
-)
+@Preview(showBackground = true)
 @Composable
 fun PrevBottomNavBar() {
     AnKunApp()
