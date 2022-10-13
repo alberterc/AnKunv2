@@ -41,6 +41,7 @@ android {
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            excludes += 'META-INF/DEPENDENCIES'
         }
     }
 }
@@ -61,6 +62,6 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
-    // accompanist for system ui
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.26.5-rc"
+    // skrape{it} for HTML scraping
+    implementation "it.skrape:skrapeit:1.1.5"
 }
