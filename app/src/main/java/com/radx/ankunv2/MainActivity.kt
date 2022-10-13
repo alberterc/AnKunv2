@@ -5,13 +5,18 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.accompanist.systemuicontroller.SystemUiController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.radx.ankunv2.ui.theme.AnKunv2Theme
 
 
@@ -32,8 +37,21 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BottomNavigationBar() {
-    var selectedItem by remember { mutableStateOf(0) }
+fun NavigationHost(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = BottomNavigationItem.Home.route
+    ) {
+        composable(BottomNavigationItem.Home.route) { HomeScreen() }
+        composable(BottomNavigationItem.Season.route) { SeasonScreen() }
+        composable(BottomNavigationItem.Search.route) { SearchScreen() }
+        composable(BottomNavigationItem.Favorites.route) { FavoritesScreen() }
+        composable(BottomNavigationItem.Profile.route) { ProfileScreen() }
+    }
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
         BottomNavigationItem.Home,
         BottomNavigationItem.Season,
@@ -43,13 +61,34 @@ fun BottomNavigationBar() {
     )
 
     NavigationBar {
-        items.forEachIndexed { index, item ->
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
+        items.forEachIndexed { _, item ->
             NavigationBarItem(
                 icon = { Icon(item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
                 alwaysShowLabel = true,
-                selected = selectedItem == index,
-                onClick = { selectedItem = index }
+                selected = currentRoute == item.route,
+                onClick = {
+                    navController.navigate(item.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        navController.graph.startDestinationRoute?.let {route ->
+                            popUpTo(route) {
+                                saveState = true
+                            }
+                        }
+
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
+                }
             )
         }
     }
@@ -60,21 +99,20 @@ fun BottomNavigationBar() {
 fun AnKunApp() {
 //    val systemUIController: SystemUiController = rememberSystemUiController()
 //    systemUIController.isStatusBarVisible = false
+    val navController = rememberNavController()
 
     AnKunv2Theme {
         Scaffold(
-            bottomBar = { BottomNavigationBar() },
+            bottomBar = { BottomNavigationBar(navController) },
             content = { padding ->
-                Text(
-                    text = "TES",
-                    modifier = Modifier.padding(padding)
-                )
+                Box(modifier = Modifier.padding(padding)) {
+                    NavigationHost(navController = navController)
+                }
             }
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(
     name = "Light Mode",
     showBackground = true
@@ -86,15 +124,5 @@ fun AnKunApp() {
 )
 @Composable
 fun PrevBottomNavBar() {
-    AnKunv2Theme {
-        Scaffold(
-            bottomBar = { BottomNavigationBar() },
-            content = { padding ->
-                Text(
-                    text = "TES",
-                    modifier = Modifier.padding(padding)
-                )
-            }
-        )
-    }
+    AnKunApp()
 }
