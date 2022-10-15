@@ -104,6 +104,6 @@ fun AnKunApp() {
 
 @Preview(showBackground = true)
 @Composable
-fun PrevBottomNavBar() {
+fun PrevAnKunApp() {
     AnKunApp()
 }
