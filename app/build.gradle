@@ -64,4 +64,7 @@ dependencies {
 
     // skrape{it} for HTML scraping
     implementation "it.skrape:skrapeit:1.1.5"
+
+    // Coil for image loading from URL
+    implementation "io.coil-kt:coil-compose:2.2.2"
 }
