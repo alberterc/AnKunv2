@@ -10,7 +10,7 @@ import it.skrape.selects.html5.span
 import it.skrape.selects.html5.ul
 
 object AnimeSeasons {
-    private const val baseUrl = "https://animension.to/"
+    private const val baseUrl = Utils.animeBaseUrl + "seasons"
     private var seasons: List<String> = emptyList()
 
     fun getSeasonsList(): List<String> {
@@ -21,7 +21,7 @@ object AnimeSeasons {
     private fun getSeasons() {
         return skrape(HttpFetcher) {
             request {
-                url = baseUrl + "seasons"
+                url = baseUrl
             }
 
             response {
