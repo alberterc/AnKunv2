@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -86,7 +87,9 @@ fun HomeScreen() {
                 .verticalScroll( rememberScrollState() )
         ) {
             // Most Popular This Week section
-            Column {
+            Column(
+                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)
+            ) {
                 var mostPopularWeekItemsState by remember { mutableStateOf(listOf(listOf(""))) }
 
                 Box(
@@ -95,7 +98,7 @@ fun HomeScreen() {
                         .padding(16.dp, 24.dp, 16.dp, 24.dp)
                 ) {
                     LaunchedEffect(true) {
-                        getMostPopularWeekResultList(sort = "popular-week")
+                        getMostPopularResultList(sort = "popular-week")
                         mostPopularWeekItemsState = mostPopularWeekList
                     }
 
@@ -131,7 +134,9 @@ fun HomeScreen() {
             }
 
             // Recent Updates Sub section
-            Column {
+            Column(
+                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)
+            ) {
                 var recentUpdatesSubItemsState by remember { mutableStateOf(listOf(listOf(""))) }
 
                 Box(
@@ -176,7 +181,9 @@ fun HomeScreen() {
             }
 
             // Recent Updates Dub section
-            Column {
+            Column(
+                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 10.dp)
+            ) {
                 var recentUpdatesDubItemsState by remember { mutableStateOf(listOf(listOf(""))) }
 
                 Box(
@@ -215,6 +222,53 @@ fun HomeScreen() {
                     items(recentUpdatesDubItemsState) { item ->
                         if (recentUpdatesDubItemsState.size != 1) {
                             AnimeRecentUpdatesCardItem(anime = item, isDub = "1")
+                        }
+                    }
+                }
+            }
+
+            // Most Popular This Year section
+            Column(
+                modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 32.dp)
+            ) {
+                var mostPopularYearItemsState by remember { mutableStateOf(listOf(listOf(""))) }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 24.dp, 16.dp, 24.dp)
+                ) {
+                    LaunchedEffect(true) {
+                        getMostPopularResultList(sort = "popular-year")
+                        mostPopularYearItemsState = mostPopularYearList
+                    }
+
+                    Text(
+                        text = "Most Popular This Year",
+                        modifier = Modifier.align(Alignment.TopStart),
+                        fontSize = 16.sp
+                    )
+                    ClickableText(
+                        text = AnnotatedString(
+                            text = "See all",
+                            spanStyle = SpanStyle(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontSize = 16.sp
+                            )
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        onClick = { }
+                    )
+                }
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                ) {
+                    items(mostPopularYearItemsState) { item ->
+                        if (mostPopularYearItemsState.size != 1) {
+                            AnimeMostPopularCardItem(item)
                         }
                     }
                 }
@@ -413,9 +467,9 @@ fun fillSliderList() {
 var recentUpdatesSubList = listOf(listOf(""))
 var recentUpdatesDubList = listOf(listOf(""))
 suspend fun getRecentUpdatesResultList(mode: String = "sub") = withContext(Dispatchers.IO) {
-    fillrecentUpdatesList(mode = mode)
+    fillRecentUpdatesList(mode = mode)
 }
-fun fillrecentUpdatesList(mode: String = "sub") {
+fun fillRecentUpdatesList(mode: String = "sub") {
     if (mode == "sub") {
         recentUpdatesSubList = AnimeRecentUpdates.getRecentUpdatesList(mode = mode).subList(0, 5)
     }
@@ -426,9 +480,15 @@ fun fillrecentUpdatesList(mode: String = "sub") {
 
 // lazy row (anime list) variables
 var mostPopularWeekList = listOf(listOf(""))
-suspend fun getMostPopularWeekResultList(sort: String = "popular-week") = withContext(Dispatchers.IO) {
-    fillMostPopularWeekList(sort = sort)
+var mostPopularYearList = listOf(listOf(""))
+suspend fun getMostPopularResultList(sort: String = "popular-week") = withContext(Dispatchers.IO) {
+    fillMostPopularList(sort = sort)
 }
-fun fillMostPopularWeekList(sort: String = "popular-week") {
-    mostPopularWeekList = AnimeSearch.getSearchResultList(sort = sort, dub = "0").subList(0, 5)
+fun fillMostPopularList(sort: String = "popular-week") {
+    if (sort == "popular-week") {
+        mostPopularWeekList = AnimeSearch.getSearchResultList(sort = sort, dub = "0").subList(0, 5)
+    }
+    else {
+        mostPopularYearList = AnimeSearch.getSearchResultList(sort = sort, dub = "0").subList(0, 5)
+    }
 }
