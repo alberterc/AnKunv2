@@ -38,7 +38,7 @@ fun SeasonScreen() {
     ) {
         var dropdownShowMenu by remember { mutableStateOf(false) }
         var dropdownSelectedItem by remember { mutableStateOf(dropdownItems[0]) }
-        var columnItemsState by remember { mutableStateOf(listOf(listOf(""))) }
+        var seasonItemsState by remember { mutableStateOf(listOf(listOf(""))) }
         LaunchedEffect(true) {
             getSeasonList() // get season list in background
             dropdownSelectedItem = dropdownItems[0]
@@ -114,8 +114,8 @@ fun SeasonScreen() {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            items(columnItemsState) {item ->
-                if (columnItemsState.size != 1) {
+            items(seasonItemsState) {item ->
+                if (seasonItemsState.size != 1) {
                     AnimeSeasonListCardItem(item)
                 }
             }
@@ -127,7 +127,7 @@ fun SeasonScreen() {
                     .apply {
                         try {
                             getSearchResultList(season = dropdownSelectedItem)
-                            columnItemsState = columnItems
+                            seasonItemsState = seasonItems
                         } catch (ignored: IndexOutOfBoundsException) {}
                     }
             }
@@ -212,7 +212,7 @@ fun fillSeasonList() {
 }
 
 // lazy column (anime list) variables
-var columnItems = listOf(listOf(""))
+var seasonItems = listOf(listOf(""))
 suspend fun getSearchResultList(
     search: String = "", season: String = "", genres: String = "",
     dub: String = "", airing: String = "", sort: String = "popular-week",
@@ -225,5 +225,5 @@ fun fillSearchResultList(
     dub: String = "", airing: String = "", sort: String = "popular-week",
     page: String = "1"
 ) {
-    columnItems = AnimeSearch.getSearchResultList(season = season)
+    seasonItems = AnimeSearch.getSearchResultList(season = season)
 }
