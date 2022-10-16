@@ -4,9 +4,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,15 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.calculateCurrentOffsetForPage
 import com.google.accompanist.pager.rememberPagerState
+import com.radx.ankunv2.anime.AnimeRecentUpdates
+import com.radx.ankunv2.anime.AnimeSearch
 import com.radx.ankunv2.anime.AnimeSlider
 import com.radx.ankunv2.ui.theme.Transparent
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +44,8 @@ import kotlin.math.absoluteValue
 @Composable
 fun HomeScreen() {
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         var sliderItemsState by remember { mutableStateOf(listOf(listOf(""))) }
         val pagerState = rememberPagerState()
@@ -45,6 +54,7 @@ fun HomeScreen() {
             sliderItemsState = sliderItems
         }
 
+        // Slider section
         if (sliderItemsState.size != 1) {
             HorizontalPager(
                 count = sliderItemsState.size,
@@ -70,21 +80,260 @@ fun HomeScreen() {
             }
         }
 
-        Box(
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll( rememberScrollState() )
         ) {
-            Text(
-                text = "Most Popular This Week",
-                modifier = Modifier.align(Alignment.TopStart)
+            // Most Popular This Week section
+            Column {
+                var mostPopularWeekItemsState by remember { mutableStateOf(listOf(listOf(""))) }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 24.dp, 16.dp, 24.dp)
+                ) {
+                    LaunchedEffect(true) {
+                        getMostPopularWeekResultList(sort = "popular-week")
+                        mostPopularWeekItemsState = mostPopularWeekList
+                    }
+
+                    Text(
+                        text = "Most Popular This Week",
+                        modifier = Modifier.align(Alignment.TopStart),
+                        fontSize = 16.sp
+                    )
+                    ClickableText(
+                        text = AnnotatedString(
+                            text = "See all",
+                            spanStyle = SpanStyle(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontSize = 16.sp
+                            )
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        onClick = { }
+                    )
+                }
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                ) {
+                    items(mostPopularWeekItemsState) { item ->
+                        if (mostPopularWeekItemsState.size != 1) {
+                            AnimeMostPopularCardItem(item)
+                        }
+                    }
+                }
+            }
+
+            // Recent Updates Sub section
+            Column {
+                var recentUpdatesSubItemsState by remember { mutableStateOf(listOf(listOf(""))) }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 24.dp, 16.dp, 24.dp)
+                ) {
+                    LaunchedEffect(true) {
+                        getRecentUpdatesResultList()
+                        recentUpdatesSubItemsState = recentUpdatesSubList
+                    }
+
+                    Text(
+                        text = "Recent Updates (Sub)",
+                        modifier = Modifier.align(Alignment.TopStart),
+                        fontSize = 16.sp
+                    )
+                    ClickableText(
+                        text = AnnotatedString(
+                            text = "See all",
+                            spanStyle = SpanStyle(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontSize = 16.sp
+                            )
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        onClick = { }
+                    )
+                }
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                ) {
+                    items(recentUpdatesSubItemsState) { item ->
+                        if (recentUpdatesSubItemsState.size != 1) {
+                            AnimeRecentUpdatesCardItem(anime = item, isDub = "0")
+                        }
+                    }
+                }
+            }
+
+            // Recent Updates Dub section
+            Column {
+                var recentUpdatesDubItemsState by remember { mutableStateOf(listOf(listOf(""))) }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp, 24.dp, 16.dp, 24.dp)
+                ) {
+                    LaunchedEffect(true) {
+                        getRecentUpdatesResultList(mode = "dub")
+                        recentUpdatesDubItemsState = recentUpdatesDubList
+                    }
+
+                    Text(
+                        text = "Recent Updates (Dub)",
+                        modifier = Modifier.align(Alignment.TopStart),
+                        fontSize = 16.sp
+                    )
+                    ClickableText(
+                        text = AnnotatedString(
+                            text = "See all",
+                            spanStyle = SpanStyle(
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontSize = 16.sp
+                            )
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        onClick = { }
+                    )
+                }
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier
+                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                ) {
+                    items(recentUpdatesDubItemsState) { item ->
+                        if (recentUpdatesDubItemsState.size != 1) {
+                            AnimeRecentUpdatesCardItem(anime = item, isDub = "1")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AnimeMostPopularCardItem(anime: List<String>) {
+    // [[Anime Title, Anime ID, ANIME THUMBNAIL, SUB OR DUB (sub=0, dub=1]]
+    val title = anime[0].replace("\"", "")
+    val id = anime[1]
+    val thumbnailUrl = anime[2].replace("\"", "")
+    val isDub = anime[3]
+
+    Card(
+        modifier = Modifier
+            .height(180.dp)
+            .width(120.dp),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Box {
+            Image(
+                painter = rememberAsyncImagePainter(thumbnailUrl),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
             )
-            ClickableText(
-                text = AnnotatedString("See all"),
-                modifier = Modifier.align(Alignment.TopEnd),
-                onClick = { }
-            )
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Transparent,
+                                Color.Black
+                            ),
+                            startY = 0f,
+                            endY = 1000f
+                        )
+                    )
             ) {
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp, 0.dp, 16.dp, 15.dp),
+                    text = title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AnimeRecentUpdatesCardItem(anime: List<String>, isDub: String = "0") {
+    // [[Anime Title, Anime ID, UNKNOWN, TOTAL EP, ANIME THUMBNAIL, LAST EP RELEASE TIME]]
+    val title = anime[0].replace("\"", "")
+    val id = anime[1]
+    val thumbnailUrl = anime[4].replace("\"", "")
+
+    Card(
+        modifier = Modifier
+            .height(180.dp)
+            .width(120.dp),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Box {
+            Image(
+                painter = rememberAsyncImagePainter(thumbnailUrl),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Transparent,
+                                Color.Black
+                            ),
+                            startY = 0f,
+                            endY = 1000f
+                        )
+                    )
+            ) {
+                if (isDub == "1") {
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(0.dp, 8.dp, 8.dp, 0.dp),
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .background(color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                .padding(5.dp, 2.dp, 5.dp, 2.dp),
+                            text = "DUB",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(8.dp, 0.dp, 16.dp, 15.dp),
+                    text = title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.sp
+                )
             }
         }
     }
@@ -113,7 +362,7 @@ fun HomeSliderCard(title: String, thumbnailUrl: String, pageOffset: Float) {
                 )
             }
             .fillMaxWidth()
-            .height(330.dp),
+            .height(250.dp),
         shape = RoundedCornerShape(0.dp)
     ) {
         Box {
@@ -158,4 +407,28 @@ suspend fun getSliderList() = withContext(Dispatchers.IO) {
 }
 fun fillSliderList() {
     sliderItems = AnimeSlider.getSliderResultList()
+}
+
+// lazy row (anime list) variables
+var recentUpdatesSubList = listOf(listOf(""))
+var recentUpdatesDubList = listOf(listOf(""))
+suspend fun getRecentUpdatesResultList(mode: String = "sub") = withContext(Dispatchers.IO) {
+    fillrecentUpdatesList(mode = mode)
+}
+fun fillrecentUpdatesList(mode: String = "sub") {
+    if (mode == "sub") {
+        recentUpdatesSubList = AnimeRecentUpdates.getRecentUpdatesList(mode = mode).subList(0, 5)
+    }
+    else {
+        recentUpdatesDubList = AnimeRecentUpdates.getRecentUpdatesList(mode = mode).subList(0, 5)
+    }
+}
+
+// lazy row (anime list) variables
+var mostPopularWeekList = listOf(listOf(""))
+suspend fun getMostPopularWeekResultList(sort: String = "popular-week") = withContext(Dispatchers.IO) {
+    fillMostPopularWeekList(sort = sort)
+}
+fun fillMostPopularWeekList(sort: String = "popular-week") {
+    mostPopularWeekList = AnimeSearch.getSearchResultList(sort = sort, dub = "0").subList(0, 5)
 }
