@@ -1,16 +1,14 @@
-package com.radx.ankunv2.screens
+package com.radx.ankunv2.screens.home
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -20,30 +18,52 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.calculateCurrentOffsetForPage
 import com.google.accompanist.pager.rememberPagerState
-import com.radx.ankunv2.anime.AnimeRecentUpdates
-import com.radx.ankunv2.anime.AnimeSearch
-import com.radx.ankunv2.anime.AnimeSlider
+import com.radx.ankunv2.anime.*
+import com.radx.ankunv2.screens.AnimeDetailsScreen
 import com.radx.ankunv2.ui.theme.Transparent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun HomeNavigationHost(navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = Screens.Home.route
+    ) {
+        composable(route = Screens.Home.route) { MainScreen(navController) }
+        composable(route = Screens.PopularWeek.route) { MostPopularWeekScreen(navController) }
+        composable(route = Screens.PopularYear.route) {}
+        composable(route = Screens.RecentUpdatesSub.route) {}
+        composable(route = Screens.RecentUpdatesDub.route) {}
+        composable(route = AnimeDetailsScreenNav.AnimeDetails.route) { AnimeDetailsScreen() }
+    }
+}
+
 @Composable
 fun HomeScreen() {
+    val navController = rememberNavController()
+    HomeNavigationHost(navController = navController)
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun MainScreen(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -107,27 +127,28 @@ fun HomeScreen() {
                         modifier = Modifier.align(Alignment.TopStart),
                         fontSize = 16.sp
                     )
-                    ClickableText(
-                        text = AnnotatedString(
-                            text = "See all",
-                            spanStyle = SpanStyle(
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontSize = 16.sp
+                    Text(
+                        text = "See all",
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
+                                onClick = { navController.navigate(Screens.PopularWeek.route) }
                             )
-                        ),
-                        modifier = Modifier.align(Alignment.TopEnd),
-                        onClick = { }
                     )
                 }
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
-                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                        .padding(16.dp, 0.dp, 0.dp, 0.dp)
                 ) {
                     items(mostPopularWeekItemsState) { item ->
                         if (mostPopularWeekItemsState.size != 1) {
-                            AnimeMostPopularCardItem(item)
+                            AnimeMostPopularCardItem(item, navController)
                         }
                     }
                 }
@@ -154,23 +175,24 @@ fun HomeScreen() {
                         modifier = Modifier.align(Alignment.TopStart),
                         fontSize = 16.sp
                     )
-                    ClickableText(
-                        text = AnnotatedString(
-                            text = "See all",
-                            spanStyle = SpanStyle(
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontSize = 16.sp
+                    Text(
+                        text = "See all",
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
+                                onClick = {  }
                             )
-                        ),
-                        modifier = Modifier.align(Alignment.TopEnd),
-                        onClick = { }
                     )
                 }
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
-                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                        .padding(16.dp, 0.dp, 0.dp, 0.dp)
                 ) {
                     items(recentUpdatesSubItemsState) { item ->
                         if (recentUpdatesSubItemsState.size != 1) {
@@ -201,23 +223,24 @@ fun HomeScreen() {
                         modifier = Modifier.align(Alignment.TopStart),
                         fontSize = 16.sp
                     )
-                    ClickableText(
-                        text = AnnotatedString(
-                            text = "See all",
-                            spanStyle = SpanStyle(
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontSize = 16.sp
+                    Text(
+                        text = "See all",
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
+                                onClick = {  }
                             )
-                        ),
-                        modifier = Modifier.align(Alignment.TopEnd),
-                        onClick = { }
                     )
                 }
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
-                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                        .padding(16.dp, 0.dp, 0.dp, 0.dp)
                 ) {
                     items(recentUpdatesDubItemsState) { item ->
                         if (recentUpdatesDubItemsState.size != 1) {
@@ -248,27 +271,28 @@ fun HomeScreen() {
                         modifier = Modifier.align(Alignment.TopStart),
                         fontSize = 16.sp
                     )
-                    ClickableText(
-                        text = AnnotatedString(
-                            text = "See all",
-                            spanStyle = SpanStyle(
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontSize = 16.sp
+                    Text(
+                        text = "See all",
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        fontSize = 16.sp,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
+                                onClick = {  }
                             )
-                        ),
-                        modifier = Modifier.align(Alignment.TopEnd),
-                        onClick = { }
                     )
                 }
 
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier
-                        .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                        .padding(16.dp, 0.dp, 0.dp, 0.dp)
                 ) {
                     items(mostPopularYearItemsState) { item ->
                         if (mostPopularYearItemsState.size != 1) {
-                            AnimeMostPopularCardItem(item)
+                            AnimeMostPopularCardItem(item, navController)
                         }
                     }
                 }
@@ -277,8 +301,9 @@ fun HomeScreen() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnimeMostPopularCardItem(anime: List<String>) {
+fun AnimeMostPopularCardItem(anime: List<String>, navController: NavHostController) {
     // [[Anime Title, Anime ID, ANIME THUMBNAIL, SUB OR DUB (sub=0, dub=1]]
     val title = anime[0].replace("\"", "")
     val id = anime[1]
@@ -289,7 +314,8 @@ fun AnimeMostPopularCardItem(anime: List<String>) {
         modifier = Modifier
             .height(180.dp)
             .width(120.dp),
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(18.dp),
+        onClick = { navController.navigate(AnimeDetailsScreenNav.AnimeDetails.route) }
     ) {
         Box {
             Image(
