@@ -1,4 +1,4 @@
-package com.radx.ankunv2.screens
+package com.radx.ankunv2.screens.season
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
