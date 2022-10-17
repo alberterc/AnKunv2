@@ -19,7 +19,7 @@ object AnimeSeasons {
     }
 
     private fun getSeasons() {
-        return skrape(HttpFetcher) {
+        skrape(HttpFetcher) {
             request {
                 url = baseUrl
             }
