@@ -24,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -44,14 +46,45 @@ import kotlin.math.absoluteValue
 fun HomeNavigationHost(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screens.Home.route
+        startDestination = HomeMenus.Home.route
     ) {
-        composable(route = Screens.Home.route) { MainScreen(navController) }
-        composable(route = Screens.PopularWeek.route) { MostPopularWeekScreen(navController) }
-        composable(route = Screens.PopularYear.route) {}
-        composable(route = Screens.RecentUpdatesSub.route) {}
-        composable(route = Screens.RecentUpdatesDub.route) {}
-        composable(route = AnimeDetailsScreenNav.AnimeDetails.route) { AnimeDetailsScreen() }
+        composable(route = HomeMenus.Home.route) { MainScreen(navController) }
+        composable(
+            route = "${HomeMenus.PopularWeek.route}/{popularType}/{page}",
+            arguments = listOf(
+                navArgument("popularType") {
+                    type = NavType.StringType
+                },
+                navArgument("page") {
+                    type = NavType.StringType
+                })
+        ) { MostPopularScreen(
+            navController,
+            it.arguments!!.getString("popularType")!!,
+            it.arguments!!.getString("page")!!
+        ) }
+        composable(
+            route = "${HomeMenus.PopularYear.route}/{popularType}/{page}",
+            arguments = listOf(
+                navArgument("popularType") {
+                    type = NavType.StringType
+                },
+                navArgument("page") {
+                    type = NavType.StringType
+                })
+        ) { MostPopularScreen(
+            navController,
+            it.arguments!!.getString("popularType")!!,
+            it.arguments!!.getString("page")!!
+        ) }
+        composable(route = HomeMenus.RecentUpdatesSub.route) {}
+        composable(route = HomeMenus.RecentUpdatesDub.route) {}
+        composable(
+            route = "${AnimeDetailsScreenNav.AnimeDetails.route}/{animeId}",
+            arguments = listOf(navArgument("animeId") {
+                type = NavType.StringType
+            })
+        ) { AnimeDetailsScreen(it.arguments!!.getString("animeId")!!) }
     }
 }
 
@@ -70,7 +103,7 @@ fun MainScreen(navController: NavHostController) {
     ) {
         var sliderItemsState by remember { mutableStateOf(listOf(listOf(""))) }
         val pagerState = rememberPagerState()
-        LaunchedEffect(true) {
+        LaunchedEffect(Unit) {
             getSliderList()
             sliderItemsState = sliderItems
         }
@@ -117,7 +150,7 @@ fun MainScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .padding(16.dp, 24.dp, 16.dp, 24.dp)
                 ) {
-                    LaunchedEffect(true) {
+                    LaunchedEffect(Unit) {
                         getMostPopularResultList(sort = "popular-week")
                         mostPopularWeekItemsState = mostPopularWeekList
                     }
@@ -136,7 +169,7 @@ fun MainScreen(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                onClick = { navController.navigate(Screens.PopularWeek.route) }
+                                onClick = { navController.navigate("${HomeMenus.PopularWeek.route}/popular-week/1") }
                             )
                     )
                 }
@@ -165,7 +198,7 @@ fun MainScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .padding(16.dp, 24.dp, 16.dp, 24.dp)
                 ) {
-                    LaunchedEffect(true) {
+                    LaunchedEffect(Unit) {
                         getRecentUpdatesResultList()
                         recentUpdatesSubItemsState = recentUpdatesSubList
                     }
@@ -213,7 +246,7 @@ fun MainScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .padding(16.dp, 24.dp, 16.dp, 24.dp)
                 ) {
-                    LaunchedEffect(true) {
+                    LaunchedEffect(Unit) {
                         getRecentUpdatesResultList(mode = "dub")
                         recentUpdatesDubItemsState = recentUpdatesDubList
                     }
@@ -261,7 +294,7 @@ fun MainScreen(navController: NavHostController) {
                         .fillMaxWidth()
                         .padding(16.dp, 24.dp, 16.dp, 24.dp)
                 ) {
-                    LaunchedEffect(true) {
+                    LaunchedEffect(Unit) {
                         getMostPopularResultList(sort = "popular-year")
                         mostPopularYearItemsState = mostPopularYearList
                     }
@@ -280,7 +313,7 @@ fun MainScreen(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                onClick = {  }
+                                onClick = { navController.navigate("${HomeMenus.PopularWeek.route}/popular-year/1") }
                             )
                     )
                 }
@@ -315,7 +348,9 @@ fun AnimeMostPopularCardItem(anime: List<String>, navController: NavHostControll
             .height(180.dp)
             .width(120.dp),
         shape = RoundedCornerShape(18.dp),
-        onClick = { navController.navigate(AnimeDetailsScreenNav.AnimeDetails.route) }
+        onClick = {
+            navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id")
+        }
     ) {
         Box {
             Image(
