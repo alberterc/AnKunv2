@@ -9,17 +9,23 @@ object AnimeDetails {
     private var animeGenreList: List<String> = listOf("")
 
     fun getAnimeDetailsList(animeID: String): Map<String, String> {
-        animeDetailsResponse(animeID = animeID)
+        try {
+            animeDetailsResponse(animeID = animeID)
+        } catch (ignored: IndexOutOfBoundsException) {}
         return this.animeDetailsMap
     }
 
     fun getAnimeEpisodesList(animeID: String): List<List<String>> {
-        animeEpisodesResponse(animeID = animeID)
+        try {
+            animeEpisodesResponse(animeID = animeID)
+        } catch (ignored: IndexOutOfBoundsException) {}
         return this.animeEpisodesList
     }
 
     fun getAnimeGenreList(animeID: String): List<String> {
-        animeGenreResponse(animeID = animeID)
+        try {
+            animeGenreResponse(animeID = animeID)
+        } catch (ignored: IndexOutOfBoundsException) {}
         return this.animeGenreList
     }
 
