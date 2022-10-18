@@ -65,6 +65,9 @@ dependencies {
     // material 2 bottom sheet
     // implementation 'androidx.compose.material:material:1.2.1'
 
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
     // Google Accompanist for HorizontalPager
     implementation "com.google.accompanist:accompanist-pager:0.24.1-alpha"
     implementation "androidx.compose.ui:ui-util:$compose_version"
