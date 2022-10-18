@@ -77,8 +77,38 @@ fun HomeNavigationHost(navController: NavHostController) {
             it.arguments!!.getString("popularType")!!,
             it.arguments!!.getString("page")!!
         ) }
-        composable(route = HomeMenus.RecentUpdatesSub.route) {}
-        composable(route = HomeMenus.RecentUpdatesDub.route) {}
+        composable(
+            route = "${HomeMenus.RecentUpdatesSub.route}/{mode}/{page}",
+            arguments = listOf(
+                navArgument("mode") {
+                    type = NavType.StringType
+                },
+                navArgument("page") {
+                    type = NavType.StringType
+                })
+        ) {
+            RecentUpdatesScreen(
+                navController,
+                it.arguments!!.getString("mode")!!,
+                it.arguments!!.getString("page")!!
+            )
+        }
+        composable(
+            route = "${HomeMenus.RecentUpdatesDub.route}/{mode}/{page}",
+            arguments = listOf(
+                navArgument("mode") {
+                    type = NavType.StringType
+                },
+                navArgument("page") {
+                    type = NavType.StringType
+                })
+        ) {
+            RecentUpdatesScreen(
+                navController,
+                it.arguments!!.getString("mode")!!,
+                it.arguments!!.getString("page")!!
+            )
+        }
         composable(
             route = "${AnimeDetailsScreenNav.AnimeDetails.route}/{animeId}",
             arguments = listOf(navArgument("animeId") {
@@ -217,7 +247,7 @@ fun MainScreen(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                onClick = {  }
+                                onClick = { navController.navigate("${HomeMenus.RecentUpdatesSub.route}/sub/1") }
                             )
                     )
                 }
@@ -229,7 +259,7 @@ fun MainScreen(navController: NavHostController) {
                 ) {
                     items(recentUpdatesSubItemsState) { item ->
                         if (recentUpdatesSubItemsState.size != 1) {
-                            AnimeRecentUpdatesCardItem(anime = item, isDub = "0")
+                            AnimeRecentUpdatesCardItem(anime = item, isDub = "0", navController = navController)
                         }
                     }
                 }
@@ -265,7 +295,7 @@ fun MainScreen(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                onClick = {  }
+                                onClick = { navController.navigate("${HomeMenus.RecentUpdatesDub.route}/dub/1") }
                             )
                     )
                 }
@@ -277,7 +307,7 @@ fun MainScreen(navController: NavHostController) {
                 ) {
                     items(recentUpdatesDubItemsState) { item ->
                         if (recentUpdatesDubItemsState.size != 1) {
-                            AnimeRecentUpdatesCardItem(anime = item, isDub = "1")
+                            AnimeRecentUpdatesCardItem(anime = item, isDub = "1", navController = navController)
                         }
                     }
                 }
@@ -313,7 +343,7 @@ fun MainScreen(navController: NavHostController) {
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                onClick = { navController.navigate("${HomeMenus.PopularWeek.route}/popular-year/1") }
+                                onClick = { navController.navigate("${HomeMenus.PopularYear.route}/popular-year/1") }
                             )
                     )
                 }
@@ -341,16 +371,13 @@ fun AnimeMostPopularCardItem(anime: List<String>, navController: NavHostControll
     val title = anime[0].replace("\"", "")
     val id = anime[1]
     val thumbnailUrl = anime[2].replace("\"", "")
-    val isDub = anime[3]
 
     Card(
         modifier = Modifier
             .height(180.dp)
             .width(120.dp),
         shape = RoundedCornerShape(18.dp),
-        onClick = {
-            navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id")
-        }
+        onClick = { navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id") }
     ) {
         Box {
             Image(
@@ -388,8 +415,9 @@ fun AnimeMostPopularCardItem(anime: List<String>, navController: NavHostControll
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnimeRecentUpdatesCardItem(anime: List<String>, isDub: String = "0") {
+fun AnimeRecentUpdatesCardItem(anime: List<String>, isDub: String = "0", navController: NavHostController) {
     // [[Anime Title, Anime ID, UNKNOWN, TOTAL EP, ANIME THUMBNAIL, LAST EP RELEASE TIME]]
     val title = anime[0].replace("\"", "")
     val id = anime[1]
@@ -399,7 +427,8 @@ fun AnimeRecentUpdatesCardItem(anime: List<String>, isDub: String = "0") {
         modifier = Modifier
             .height(180.dp)
             .width(120.dp),
-        shape = RoundedCornerShape(18.dp)
+        shape = RoundedCornerShape(18.dp),
+        onClick = { navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id") }
     ) {
         Box {
             Image(
