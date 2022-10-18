@@ -5,8 +5,8 @@ import java.net.URL
 object AnimeRecentUpdates {
     private var recentUpdatesList: List<List<String>> = mutableListOf()
 
-    fun getRecentUpdatesList(mode: String = "sub") : List<List<String>> {
-        getRecentUpdates(mode = mode)
+    fun getRecentUpdatesList(mode: String = "sub", page: String = "1") : List<List<String>> {
+        getRecentUpdates(mode = mode, page = page)
         return this.recentUpdatesList
     }
 
