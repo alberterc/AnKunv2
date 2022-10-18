@@ -34,6 +34,7 @@ import com.radx.ankunv2.anime.AnimeSearch
 import com.radx.ankunv2.screens.AnimeDetailsScreen
 import com.radx.ankunv2.ui.theme.BrightGrey
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
@@ -73,10 +74,20 @@ fun MostPopularScreen(navController: NavHostController, popularType: String, pag
             .padding(16.dp, 0.dp, 16.dp, 16.dp)
     ) {
         var mostPopularItemsState by remember { mutableStateOf(listOf(listOf(""))) }
-        var currentPage = page
+        var currentPage by remember { mutableStateOf(page) }
         LaunchedEffect(Unit) {
             getMostPopularDetailedList(page = currentPage, sort = popularType)
             mostPopularItemsState = mostPopularItems
+        }
+
+        LaunchedEffect(currentPage) {
+            launch {
+                snapshotFlow { currentPage }
+                    .apply {
+                        getMostPopularDetailedList(page = currentPage, sort = popularType)
+                        mostPopularItemsState = mostPopularItems
+                    }
+            }
         }
 
         // top app bar
@@ -122,13 +133,12 @@ fun MostPopularScreen(navController: NavHostController, popularType: String, pag
                 modifier = Modifier.padding(0.dp, 0.dp, 40.dp, 0.dp),
                 content = { Text(text = "Prev") },
                 onClick = {
-                    if (popularType == "popular-week") {
-                        currentPage = (Integer.parseInt(currentPage) - 1).toString()
-                        navController.navigate("${HomeMenus.PopularWeek.route}/$popularType/$currentPage")
-                    }
-                    else {
-                        currentPage = (Integer.parseInt(currentPage) - 1).toString()
-                        navController.navigate("${HomeMenus.PopularWeek.route}/$popularType/$currentPage")
+                    currentPage = if (popularType == "popular-week") {
+                        (Integer.parseInt(currentPage) - 1).toString()
+//                        navController.navigate("${HomeMenus.PopularWeek.route}/$popularType/$currentPage")
+                    } else {
+                        (Integer.parseInt(currentPage) - 1).toString()
+//                        navController.navigate("${HomeMenus.PopularWeek.route}/$popularType/$currentPage")
                     }
                 }
             )
@@ -142,13 +152,12 @@ fun MostPopularScreen(navController: NavHostController, popularType: String, pag
                 modifier = Modifier.padding(40.dp, 0.dp, 0.dp, 0.dp),
                 content = { Text(text = "Next") },
                 onClick = {
-                    if (popularType == "popular-week") {
-                        currentPage = (Integer.parseInt(currentPage) + 1).toString()
-                        navController.navigate("${HomeMenus.PopularYear.route}/$popularType/$currentPage")
-                    }
-                    else {
-                        currentPage = (Integer.parseInt(currentPage) + 1).toString()
-                        navController.navigate("${HomeMenus.PopularYear.route}/$popularType/$currentPage")
+                    currentPage = if (popularType == "popular-week") {
+                        (Integer.parseInt(currentPage) + 1).toString()
+//                        navController.navigate("${HomeMenus.PopularYear.route}/$popularType/$currentPage")
+                    } else {
+                        (Integer.parseInt(currentPage) + 1).toString()
+//                        navController.navigate("${HomeMenus.PopularYear.route}/$popularType/$currentPage")
                     }
                 }
             )
