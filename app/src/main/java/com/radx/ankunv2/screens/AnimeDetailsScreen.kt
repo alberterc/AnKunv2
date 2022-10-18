@@ -1,12 +1,17 @@
 package com.radx.ankunv2.screens
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import android.util.Log
+import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -19,40 +24,60 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.radx.ankunv2.R
+import com.radx.ankunv2.anime.AnimeDetails
 import com.radx.ankunv2.ui.theme.BrightGrey
+import com.radx.ankunv2.ui.theme.Grey
 import com.radx.ankunv2.ui.theme.Transparent
-import com.radx.ankunv2.ui.theme.White
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-@Preview(showBackground = true)
 @Composable
-fun AnimeDetailsScreen() {
+fun AnimeDetailsScreen(animeID: String) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
     ) {
         val maxHeight = this.maxHeight
-
         val topHeight: Dp = maxHeight * 1/3
         val bottomHeight: Dp = maxHeight * 2/3 - 40.dp
         val centerHeight = 200.dp
         val centerPaddingBottom = bottomHeight - centerHeight/2
 
+        var genreItemsState by remember { mutableStateOf(listOf("")) }
+        var animeDetailsState by remember { mutableStateOf(mapOf(
+            "title" to "",
+            "description" to "",
+            "status" to "",
+            "type" to "",
+            "season" to "",
+            "small thumbnail" to "",
+            "large thumbnail" to ""
+        )) }
+        LaunchedEffect(Unit) {
+            getGenreItemsList(animeID = animeID)
+            genreItemsState = genreItems
+            getAnimeDetailsMap(animeID = animeID)
+            animeDetailsState = animeDetails
+        }
+
         Top(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .height(topHeight)
+                .height(topHeight),
+            animeDetailsState
         )
 
         Bottom(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .height(bottomHeight - 110.dp)
+                .height(bottomHeight - 110.dp),
+            genreItemsState,
+            animeDetailsState
         )
 
         Center(
@@ -60,14 +85,18 @@ fun AnimeDetailsScreen() {
                 .padding(start = 16.dp, end = 16.dp, bottom = centerPaddingBottom)
                 .fillMaxWidth()
                 .height(centerHeight)
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomCenter),
+            animeDetailsState
         )
     }
 }
 
 // large thumbnail
 @Composable
-fun Top(modifier: Modifier) {
+fun Top(modifier: Modifier, animeDetailsState: Map<String, String>) {
+    val largeThumbnail = if (animeDetailsState["large thumbnail"] == null) "" else animeDetailsState["large thumbnail"]!!
+    Log.e("THUMB", largeThumbnail)
+
     Column(modifier.background(Color.Transparent)) {
         Card(
             modifier = Modifier
@@ -76,10 +105,9 @@ fun Top(modifier: Modifier) {
             shape = RoundedCornerShape(0.dp)
         ) {
             Image(
-                painter = painterResource(R.drawable.ic_launcher_background),
+                painter = rememberAsyncImagePainter(largeThumbnail),
                 contentDescription = null,
-                modifier = Modifier
-                    .fillMaxHeight(),
+                modifier = Modifier.fillMaxHeight(),
                 contentScale = ContentScale.Crop
             )
         }
@@ -88,8 +116,13 @@ fun Top(modifier: Modifier) {
 
 // small thumbnail and title, etc
 @Composable
-fun Center(modifier: Modifier) {
+fun Center(modifier: Modifier, animeDetailsState: Map<String, String>) {
     val favoriteState by remember { mutableStateOf(false) }
+
+    val thumbnail = if (animeDetailsState["small thumbnail"] == null) "" else animeDetailsState["small thumbnail"]!!
+    val title = if (animeDetailsState["title"] == null) "" else animeDetailsState["title"]!!
+    val status = if (animeDetailsState["status"] == null) "" else animeDetailsState["status"]!!
+    val season = if (animeDetailsState["season"] == null) "" else animeDetailsState["season"]!!
 
     Column(
         modifier.background(Color.Transparent)
@@ -105,7 +138,7 @@ fun Center(modifier: Modifier) {
                     .width(150.dp)
             ) {
                 Image(
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
+                    painter = rememberAsyncImagePainter(thumbnail),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.FillBounds
@@ -118,7 +151,7 @@ fun Center(modifier: Modifier) {
                     .padding(12.dp, 40.dp, 0.dp, 0.dp)
             ) {
                 Text(
-                    text = "Anime title",
+                    text = title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 3,
@@ -132,7 +165,7 @@ fun Center(modifier: Modifier) {
                             .padding(0.dp, 10.dp, 0.dp, 0.dp)
                     ) {
                         Text(
-                            text = "Status",
+                            text = status,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
@@ -146,7 +179,7 @@ fun Center(modifier: Modifier) {
                                 .padding(0.dp, 0.dp, 0.dp, 0.dp)
                         )
                         Text(
-                            text = "Season",
+                            text = season,
                             fontSize = 12.sp,
                             color = BrightGrey,
                             modifier = Modifier
@@ -221,33 +254,35 @@ fun Center(modifier: Modifier) {
 
 // anime details
 @Composable
-fun Bottom(modifier: Modifier) {
-    val genreItemsState by remember { mutableStateOf(listOf("")) }
+fun Bottom(modifier: Modifier, genreItemsState: List<String>, animeDetailsState: Map<String, String>) {
     val episodeItemsState by remember { mutableStateOf(listOf("")) }
+
+    val description = if (animeDetailsState["description"] == null) "" else animeDetailsState["description"]!!
 
     Column(
         modifier
+            .verticalScroll(rememberScrollState())
             .background(Color.Transparent)
-            .padding(16.dp, 0.dp, 16.dp, 0.dp)
+            .padding(16.dp, 8.dp, 16.dp, 0.dp)
             .fillMaxSize()
     ) {
         // genre
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 100.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        LazyRow (
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
-                .padding(0.dp, 0.dp, 0.dp, 8.dp)
+                .padding(0.dp, 0.dp, 0.dp, 16.dp)
         ) {
             items(genreItemsState) { item ->
                 // each genre
-                GenreCardItem()
+                if (genreItemsState.size != 1) {
+                    GenreCardItem(item)
+                }
             }
         }
 
         // description
         Text(
-            text = "description",
+            text = description,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold
         )
@@ -263,10 +298,11 @@ fun Bottom(modifier: Modifier) {
         )
 
         // episode list
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(64.dp)
+        LazyRow(
+            modifier = Modifier
+                .padding(0.dp, 0.dp, 0.dp, 16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             items(episodeItemsState) { item ->
                 // each episode card
@@ -277,20 +313,21 @@ fun Bottom(modifier: Modifier) {
 }
 
 @Composable
-fun GenreCardItem() {
+fun GenreCardItem(genre: String) {
     OutlinedCard(
         colors = CardDefaults
             .outlinedCardColors(
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                containerColor = Transparent
             ),
-        border = BorderStroke(1.dp, White),
+        border = BorderStroke(1.dp, Grey),
         shape = RoundedCornerShape(100.dp),
         modifier = Modifier
             .wrapContentHeight()
             .wrapContentWidth()
     ) {
         Text(
-            text = "Action",
+            text = genre,
             fontSize = 12.sp,
             modifier = Modifier
                 .padding(8.dp, 3.dp, 8.dp, 3.dp)
@@ -315,4 +352,28 @@ fun EpisodeCardItem() {
             )
         }
     )
+}
+
+var genreItems = listOf("")
+suspend fun getGenreItemsList(animeID: String) = withContext(Dispatchers.IO) {
+    fillGenreItemsList(animeID = animeID)
+}
+fun fillGenreItemsList(animeID: String) {
+    genreItems = AnimeDetails.getAnimeGenreList(animeID = animeID)
+}
+
+var animeDetails = mapOf(
+    "title" to "",
+    "description" to "",
+    "status" to "",
+    "type" to "",
+    "season" to "",
+    "small thumbnail" to "",
+    "large thumbnail" to ""
+)
+suspend fun getAnimeDetailsMap(animeID: String) = withContext(Dispatchers.IO) {
+    fillAnimeDetailsMap(animeID = animeID)
+}
+fun fillAnimeDetailsMap(animeID: String) {
+    animeDetails = AnimeDetails.getAnimeDetailsList(animeID = animeID)
 }
