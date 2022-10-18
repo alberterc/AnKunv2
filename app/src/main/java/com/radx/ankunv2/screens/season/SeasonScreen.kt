@@ -175,7 +175,7 @@ fun SeasonMainScreen(navController: NavHostController) {
         }
 
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
+            columns = GridCells.Fixed(2),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -224,7 +224,7 @@ fun AnimeSeasonListCardItem(anime: List<String>, navController: NavHostControlle
 
     Card(
         modifier = Modifier
-            .height(250.dp)
+            .height(220.dp)
             .width(160.dp),
         shape = RoundedCornerShape(18.dp),
         onClick = { navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id") }
