@@ -18,9 +18,18 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.radx.ankunv2.R
+import org.apache.commons.lang3.time.DateUtils
+import java.util.*
 
 object Utils {
     const val animeBaseUrl = "https://animension.to/"
+
+    fun getTimeFromEpoch(epochTime: String): Long {
+        val currDate = DateUtils.round(Date(System.currentTimeMillis()), Calendar.MINUTE)
+        val releasedDate = DateUtils.round(Date(epochTime.toLong() * 1000), Calendar.MINUTE)
+
+        return currDate.time - releasedDate.time
+    }
 }
 
 sealed class AnimeDetailsScreenNav(var route: String) {
