@@ -1,13 +1,6 @@
 package com.radx.ankunv2.anime
 
-import it.skrape.core.htmlDocument
-import it.skrape.fetcher.HttpFetcher
-import it.skrape.fetcher.extractIt
-import it.skrape.fetcher.response
-import it.skrape.fetcher.skrape
-import it.skrape.selects.eachText
-import it.skrape.selects.html5.span
-import it.skrape.selects.html5.ul
+import org.jsoup.Jsoup
 
 object AnimeSeasons {
     private const val baseUrl = Utils.animeBaseUrl + "seasons"
@@ -19,26 +12,7 @@ object AnimeSeasons {
     }
 
     private fun getSeasons() {
-        skrape(HttpFetcher) {
-            request {
-                url = baseUrl
-            }
-
-            response {
-                htmlDocument {
-                    ul {
-                        withClass = "taxindex"
-                        findFirst {
-                            span {
-                                withClass = "name"
-                                findAll {
-                                    seasons = eachText
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        val webPage = Jsoup.connect(baseUrl).get()
+        seasons = webPage.select("ul.taxindex").select("span.name").eachText()
     }
 }

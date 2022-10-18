@@ -69,8 +69,8 @@ dependencies {
     implementation "com.google.accompanist:accompanist-pager:0.24.1-alpha"
     implementation "androidx.compose.ui:ui-util:$compose_version"
 
-    // skrape{it} for HTML scraping
-    implementation "it.skrape:skrapeit:1.1.5"
+    // jsoup for HTML scraping
+    implementation 'org.jsoup:jsoup:1.15.3'
 
     // Coil for image loading from URL
     implementation "io.coil-kt:coil-compose:2.2.2"

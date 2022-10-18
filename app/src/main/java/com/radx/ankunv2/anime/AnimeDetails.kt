@@ -1,13 +1,6 @@
 package com.radx.ankunv2.anime
 
-import android.util.Log
-import it.skrape.core.htmlDocument
-import it.skrape.fetcher.HttpFetcher
-import it.skrape.fetcher.response
-import it.skrape.fetcher.skrape
-import it.skrape.selects.*
-import it.skrape.selects.html5.*
-import javax.net.ssl.SSLException
+import org.jsoup.Jsoup
 
 object AnimeDetails {
     private var animeDetailsMap: MutableMap<String, String> = mutableMapOf()
@@ -26,131 +19,35 @@ object AnimeDetails {
     private fun getAnimeDetails(animeID: String) {
         val detailsUrl = Utils.animeBaseUrl + animeID
 
-        skrape(HttpFetcher) {
-            request {
-                url = detailsUrl
+        val webPage = Jsoup.connect(detailsUrl).get()
+        val detailsHTML = webPage.select("div.infox")
+
+        animeDetailsMap["title"] = detailsHTML.select("h1.entry-title")[0].text().trim()
+        animeDetailsMap["description"] = detailsHTML.select("div.desc")[0].text().trim()
+        detailsHTML.select("div.spe").select("span").eachText().forEach { item ->
+            if (item.substringBefore(":").trim() == "Status") {
+                animeDetailsMap["status"] = item.substringAfter(":").trim()
             }
-
-            // anime details
-            try {
-                response {
-                    htmlDocument {
-                        div {
-                            withClass = "infox"
-                            findFirst {
-                                // title
-                                h1 {
-                                    withClass = "entry-title"
-                                    findFirst {
-                                        animeDetailsMap["title"] = text.trim()
-                                    }
-                                }
-
-                                // description
-                                div {
-                                    withClass = "desc"
-                                    findFirst {
-                                        animeDetailsMap["description"] = text.trim()
-                                    }
-                                }
-
-                                // check if anime details is available
-                                div {
-                                    withClass = "spe"
-                                    findFirst {
-                                        span {
-                                            findAll {
-                                                eachText.forEach { item ->
-                                                    if (item.substringBefore(":").trim() == "Status") {
-                                                        animeDetailsMap["status"] = item.substringAfter(":").trim()
-                                                    }
-                                                    else if (item.substringBefore(":").trim() == "Type") {
-                                                        animeDetailsMap["type"] = item.substringAfter(":").trim()
-                                                    }
-                                                    else if (item.substringBefore(":").trim() == "Season") {
-                                                        animeDetailsMap["season"] = item.substringAfter(":").trim()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // small thumbnail
-                        div {
-                            withClass = "thumbook"
-                            findFirst {
-                                img {
-                                    findFirst {
-                                        animeDetailsMap["small thumbnail"] = attribute("src").trim()
-                                    }
-                                }
-                            }
-                        }
-
-                        // large thumbnail
-                        div {
-                            withClass = "bigcover"
-                            findFirst {
-                                div {
-                                    findFirst {
-                                        animeDetailsMap["large thumbnail"] = attribute("style")
-                                            .substringAfter("\'", "")
-                                            .replace("\'", "")
-                                            .replace(")", "")
-                                            .replace(";", "")
-                                            .trim()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            else if (item.substringBefore(":").trim() == "Type") {
+                animeDetailsMap["type"] = item.substringAfter(":").trim()
             }
-            catch (ignored: SSLException) {}
-            catch (ignored: ElementNotFoundException) {}
+            else if (item.substringBefore(":").trim() == "Season") {
+                animeDetailsMap["season"] = item.substringAfter(":").trim()
+            }
         }
+        animeDetailsMap["small thumbnail"] = webPage.select("div.thumbook").select("img")[0].absUrl("src")
+        animeDetailsMap["large thumbnail"] = webPage.select("div.bigcover").select("div").attr("style")
+            .substringAfter("\'", "")
+            .replace("\'", "")
+            .replace(")", "")
+            .replace(";", "")
+            .trim()
     }
 
     private fun getAnimeGenre(animeID: String) {
         val detailsUrl = Utils.animeBaseUrl + animeID
 
-        skrape(HttpFetcher) {
-            request {
-                url = detailsUrl
-            }
-
-            // anime details
-            try {
-                response {
-                    htmlDocument {
-                        div {
-                            withClass = "infox"
-                            findFirst {
-                                // genre
-                                div {
-                                    withClass = "genxed"
-                                    findFirst {
-                                        span {
-                                            findFirst {
-                                                a {
-                                                    findAll {
-                                                        animeGenreList = eachText
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (ignored: SSLException) {}
-            catch (ignored: ElementNotFoundException) {}
-        }
+        val webPage = Jsoup.connect(detailsUrl).get()
+        animeGenreList = webPage.select("div.infox").select("div.genxed").select("span")[0].select("a").eachText()
     }
 }
