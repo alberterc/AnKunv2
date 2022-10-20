@@ -47,16 +47,6 @@ import kotlinx.coroutines.flow.collect
 import kotlin.math.absoluteValue
 
 @Composable
-fun SearchScreen() {
-    Column {
-        Text(
-            text = "Search Screen",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-    }
-}
-
-@Composable
 fun FavoritesScreen() {
     Column {
         Text(
