@@ -75,7 +75,7 @@ fun SeasonMainScreen(navController: NavHostController) {
         LaunchedEffect(Unit) {
             getSeasonList() // get season list in background
             dropdownSelectedItem = dropdownItems[0]
-            getSearchResultList(season = dropdownSelectedItem, page = "1")
+            getSeasonResultList(season = dropdownSelectedItem, page = "1")
             seasonItemsState = seasonItems
         }
 
@@ -178,6 +178,7 @@ fun SeasonMainScreen(navController: NavHostController) {
             columns = GridCells.Fixed(2),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 32.dp)
         ) {
             items(seasonItemsState) {item ->
                 if (seasonItemsState.size != 1) {
@@ -191,7 +192,7 @@ fun SeasonMainScreen(navController: NavHostController) {
                 snapshotFlow { currentPage }
                     .apply {
                         try {
-                            getSearchResultList(season = dropdownSelectedItem, page = currentPage)
+                            getSeasonResultList(season = dropdownSelectedItem, page = currentPage)
                             seasonItemsState = seasonItems
                         } catch (ignored: IndexOutOfBoundsException) {}
                     }
@@ -203,7 +204,7 @@ fun SeasonMainScreen(navController: NavHostController) {
                 snapshotFlow { dropdownSelectedItem }
                     .apply {
                         try {
-                            getSearchResultList(season = dropdownSelectedItem, page = "1")
+                            getSeasonResultList(season = dropdownSelectedItem, page = "1")
                             seasonItemsState = seasonItems
                             currentPage = "1"
                         } catch (ignored: IndexOutOfBoundsException) {}
@@ -293,14 +294,14 @@ fun fillSeasonList() {
 
 // lazy column (anime list) variables
 var seasonItems = listOf(listOf(""))
-suspend fun getSearchResultList(
+suspend fun getSeasonResultList(
     search: String = "", season: String = "", genres: String = "",
     dub: String = "", airing: String = "", sort: String = "popular-week",
     page: String = "1"
 ) = withContext(Dispatchers.IO) {
-    fillSearchResultList(season = season, page = page)
+    fillSeasonResultList(season = season, page = page)
 }
-fun fillSearchResultList(
+fun fillSeasonResultList(
     search: String = "", season: String = "", genres: String = "",
     dub: String = "", airing: String = "", sort: String = "popular-week",
     page: String = "1"
