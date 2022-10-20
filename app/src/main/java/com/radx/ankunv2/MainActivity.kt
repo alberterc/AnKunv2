@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.radx.ankunv2.screens.home.HomeScreen
+import com.radx.ankunv2.screens.search.SearchScreen
 import com.radx.ankunv2.screens.season.SeasonScreen
 import com.radx.ankunv2.ui.theme.AnKunv2Theme
 
