@@ -295,16 +295,12 @@ fun fillSeasonList() {
 // lazy column (anime list) variables
 var seasonItems = listOf(listOf(""))
 suspend fun getSeasonResultList(
-    search: String = "", season: String = "", genres: String = "",
-    dub: String = "", airing: String = "", sort: String = "popular-week",
-    page: String = "1"
+    season: String = "", page: String = "1"
 ) = withContext(Dispatchers.IO) {
     fillSeasonResultList(season = season, page = page)
 }
 fun fillSeasonResultList(
-    search: String = "", season: String = "", genres: String = "",
-    dub: String = "", airing: String = "", sort: String = "popular-week",
-    page: String = "1"
+    season: String = "", page: String = "1"
 ) {
     seasonItems = AnimeSearch.getSearchResultList(season = season, page = page)
 }
