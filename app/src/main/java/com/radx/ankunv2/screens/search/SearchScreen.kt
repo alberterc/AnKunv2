@@ -1,10 +1,7 @@
 package com.radx.ankunv2.screens.search
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -12,6 +9,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
@@ -19,26 +18,34 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import com.radx.ankunv2.anime.AnimeDetailsScreenNav
 import com.radx.ankunv2.anime.AnimeGenre
 import com.radx.ankunv2.anime.AnimeSearch
 import com.radx.ankunv2.anime.AnimeSeasons
+import com.radx.ankunv2.screens.AnimeDetailsScreen
 import com.radx.ankunv2.ui.theme.BrightGrey
 import com.radx.ankunv2.ui.theme.Grey
 import com.radx.ankunv2.ui.theme.PurpleGrey40
@@ -46,6 +53,7 @@ import com.radx.ankunv2.ui.theme.Transparent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 
 @Composable
 fun SearchNavigationHost(navController: NavHostController) {
@@ -54,6 +62,14 @@ fun SearchNavigationHost(navController: NavHostController) {
         startDestination = SearchMenus.Search.route
     ) {
         composable(route = SearchMenus.Search.route) { SearchMainScreen(navController) }
+        composable(
+            route = "${AnimeDetailsScreenNav.AnimeDetails.route}/{animeId}",
+            arguments = listOf(navArgument("animeId") {
+                type = NavType.StringType
+            })
+        ) {
+            AnimeDetailsScreen(it.arguments!!.getString("animeId")!!)
+        }
     }
 }
 
@@ -63,7 +79,7 @@ fun SearchScreen() {
     SearchNavigationHost(navController)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchMainScreen(navController: NavHostController) {
     Column(
@@ -71,13 +87,35 @@ fun SearchMainScreen(navController: NavHostController) {
             .fillMaxSize()
             .padding(16.dp, 0.dp, 16.dp, 0.dp)
     ) {
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val focusManager = LocalFocusManager.current
+
+        // search url inputs
         var searchTextInput by remember { mutableStateOf(TextFieldValue("")) }
         var seasonInput by remember { mutableStateOf("") }
-        var genresInput by remember { mutableStateOf(listOf("")) }
+        var genresInput: SnapshotStateList<String>
         var typeInput by remember { mutableStateOf("") }
         var airingInput by remember { mutableStateOf("") }
         var sortInput by remember { mutableStateOf("popular-week") }
         var currentPage by remember { mutableStateOf("1") }
+
+        // filters input
+        var filterVisible by remember { mutableStateOf(false) } // change to false to not show the filter settings on load
+        var selectedAllType by remember { mutableStateOf(true) }
+        var selectedSub by remember { mutableStateOf(false) }
+        var selectedDub by remember { mutableStateOf(false) }
+        var selectedChinese by remember { mutableStateOf(false) }
+        var selectedAllAiring by remember { mutableStateOf(true) }
+        var selectedOngoing by remember { mutableStateOf(false) }
+        var selectedCompleted by remember { mutableStateOf(false) }
+        var selectedWeek by remember { mutableStateOf(true) }
+        var selectedYear by remember { mutableStateOf(false) }
+        var selectedAZ by remember { mutableStateOf(false) }
+        var selectedZA by remember { mutableStateOf(false) }
+        var selectedRank by remember { mutableStateOf(false) }
+        var selectedSeason by remember { mutableStateOf("") }
+        var selectedGenre by remember { mutableStateOf("") }
+        val selectedGenres = remember { mutableStateListOf<String>() }
 
         var animeListState by remember { mutableStateOf(listOf(listOf(""))) }
 
@@ -108,6 +146,75 @@ fun SearchMainScreen(navController: NavHostController) {
                         searchTextInput = newText
                     },
                     placeholder = { Text(text = "Anime Title...") },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        coroutineScope.launch {
+                            typeInput =
+                                if (selectedAllType) {
+                                    ""
+                                }
+                                else if (selectedSub) {
+                                    "0"
+                                }
+                                else if(selectedDub) {
+                                    "1"
+                                }
+                                else {
+                                    "2"
+                                }
+
+                            airingInput =
+                                if (selectedAllAiring) {
+                                    ""
+                                }
+                                else if (selectedOngoing) {
+                                    "1"
+                                }
+                                else {
+                                    "0"
+                                }
+
+                            sortInput =
+                                if (selectedWeek) {
+                                    "popular-week"
+                                }
+                                else if (selectedYear) {
+                                    "popular-year"
+                                }
+                                else if (selectedAZ) {
+                                    "az"
+                                }
+                                else if (selectedZA) {
+                                    "za"
+                                }
+                                else {
+                                    "ranking"
+                                }
+
+                            genresInput = selectedGenres
+
+                            getAnimeList(
+                                search = searchTextInput.text,
+                                season = seasonInput,
+                                genres = genresInput
+                                    .joinToString(separator = ",")
+                                    .lowercase(Locale.ENGLISH),
+                                dub = typeInput,
+                                airing = airingInput,
+                                sort = sortInput,
+                                page = "1"
+                            )
+                            animeListState = animeList
+
+                            // clear filters
+                            filterVisible = false
+
+                            // go back to page 1
+                            currentPage = "1"
+                        }
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
                         containerColor = Transparent,
                         focusedTrailingIconColor = Grey,
@@ -123,18 +230,71 @@ fun SearchMainScreen(navController: NavHostController) {
                 content = { Icon(Icons.Default.Search, contentDescription = null) },
                 onClick = {
                     coroutineScope.launch {
+                        typeInput =
+                            if (selectedAllType) {
+                                ""
+                            }
+                            else if (selectedSub) {
+                                "0"
+                            }
+                            else if(selectedDub) {
+                                "1"
+                            }
+                            else {
+                                "2"
+                            }
+
+                        airingInput =
+                            if (selectedAllAiring) {
+                                ""
+                            }
+                            else if (selectedOngoing) {
+                                "1"
+                            }
+                            else {
+                                "0"
+                            }
+
+                        sortInput =
+                            if (selectedWeek) {
+                                "popular-week"
+                            }
+                            else if (selectedYear) {
+                                "popular-year"
+                            }
+                            else if (selectedAZ) {
+                                "az"
+                            }
+                            else if (selectedZA) {
+                                "za"
+                            }
+                            else {
+                                "ranking"
+                            }
+
+                        genresInput = selectedGenres
+
                         getAnimeList(
                             search = searchTextInput.text,
                             season = seasonInput,
-                            genres = "",
+                            genres = genresInput
+                                .joinToString(separator = ",")
+                                .lowercase(Locale.ENGLISH),
                             dub = typeInput,
                             airing = airingInput,
                             sort = sortInput,
                             page = "1"
                         )
                         animeListState = animeList
-                        // Log.e("ANIME", animeList.toString())
+
+                        // clear filters
+                        filterVisible = false
+
+                        // go back to page 1
+                        currentPage = "1"
                     }
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
                 },
                 shape = CircleShape,
                 contentPadding = PaddingValues(0.dp),
@@ -151,15 +311,13 @@ fun SearchMainScreen(navController: NavHostController) {
                 .padding(0.dp, 10.dp, 0.dp, 0.dp)
                 .fillMaxWidth()
         ) {
-            var visible by remember { mutableStateOf(false) } // change to false to not show the filter settings on load
-
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                        onClick = { visible = !visible }
+                        onClick = { filterVisible = !filterVisible }
                     )
             ) {
                 Text(
@@ -179,26 +337,10 @@ fun SearchMainScreen(navController: NavHostController) {
             }
 
             // filter settings
-            AnimatedVisibility(visible = visible) {
+            AnimatedVisibility(visible = filterVisible) {
                 Column {
                     // type: all, sub, dub, chinese
                     Column {
-                        var selectedAll by remember { mutableStateOf(true) }
-                        var selectedSub by remember { mutableStateOf(false) }
-                        var selectedDub by remember { mutableStateOf(false) }
-                        var selectedChinese by remember { mutableStateOf(false) }
-
-                        typeInput =
-                            if (selectedAll) {
-                                ""
-                            } else if (selectedSub) {
-                                "0"
-                            } else if(selectedDub) {
-                                "1"
-                            } else {
-                                "2"
-                            }
-
                         Text(
                             text = "Type",
                             modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
@@ -208,10 +350,10 @@ fun SearchMainScreen(navController: NavHostController) {
                         ) {
                             // all
                             FilterChip(
-                                selected = selectedAll,
+                                selected = selectedAllType,
                                 onClick = {
                                     if (selectedDub || selectedChinese || selectedSub) {
-                                        selectedAll = !selectedAll
+                                        selectedAllType = !selectedAllType
                                         selectedDub = false
                                         selectedChinese = false
                                         selectedSub = false
@@ -223,11 +365,11 @@ fun SearchMainScreen(navController: NavHostController) {
                             FilterChip(
                                 selected = selectedSub,
                                 onClick = {
-                                    if (selectedDub || selectedChinese || selectedAll) {
+                                    if (selectedDub || selectedChinese || selectedAllType) {
                                         selectedSub = !selectedSub
                                         selectedDub = false
                                         selectedChinese = false
-                                        selectedAll = false
+                                        selectedAllType = false
                                     }
                                 },
                                 label = { Text(text = "Sub") }
@@ -236,11 +378,11 @@ fun SearchMainScreen(navController: NavHostController) {
                             FilterChip(
                                 selected = selectedDub,
                                 onClick = {
-                                    if (selectedSub || selectedChinese || selectedAll) {
+                                    if (selectedSub || selectedChinese || selectedAllType) {
                                         selectedDub = !selectedDub
                                         selectedSub = false
                                         selectedChinese = false
-                                        selectedAll = false
+                                        selectedAllType = false
                                     }
                                 },
                                 label = { Text(text = "Dub") }
@@ -249,11 +391,11 @@ fun SearchMainScreen(navController: NavHostController) {
                             FilterChip(
                                 selected = selectedChinese,
                                 onClick = {
-                                    if (selectedSub || selectedDub || selectedAll) {
+                                    if (selectedSub || selectedDub || selectedAllType) {
                                         selectedChinese = !selectedChinese
                                         selectedSub = false
                                         selectedDub = false
-                                        selectedAll = false
+                                        selectedAllType = false
                                     }
                                 },
                                 label = { Text(text = "Chinese") }
@@ -266,10 +408,6 @@ fun SearchMainScreen(navController: NavHostController) {
                     Column(
                         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp)
                     ) {
-                        var selectedAll by remember { mutableStateOf(true) }
-                        var selectedOngoing by remember { mutableStateOf(false) }
-                        var selectedCompleted by remember { mutableStateOf(false) }
-
                         Text(
                             text = "Status",
                             modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
@@ -279,10 +417,10 @@ fun SearchMainScreen(navController: NavHostController) {
                         ) {
                             // all
                             FilterChip(
-                                selected = selectedAll,
+                                selected = selectedAllAiring,
                                 onClick = {
                                     if (selectedOngoing || selectedCompleted) {
-                                        selectedAll = !selectedAll
+                                        selectedAllAiring = !selectedAllAiring
                                         selectedOngoing = false
                                         selectedCompleted = false
                                     }
@@ -293,8 +431,8 @@ fun SearchMainScreen(navController: NavHostController) {
                             FilterChip(
                                 selected = selectedOngoing,
                                 onClick = {
-                                    if (selectedAll || selectedCompleted) {
-                                        selectedAll = false
+                                    if (selectedAllAiring || selectedCompleted) {
+                                        selectedAllAiring = false
                                         selectedOngoing = !selectedOngoing
                                         selectedCompleted = false
                                     }
@@ -305,8 +443,8 @@ fun SearchMainScreen(navController: NavHostController) {
                             FilterChip(
                                 selected = selectedCompleted,
                                 onClick = {
-                                    if (selectedAll || selectedOngoing) {
-                                        selectedAll = false
+                                    if (selectedAllAiring || selectedOngoing) {
+                                        selectedAllAiring = false
                                         selectedOngoing = false
                                         selectedCompleted = !selectedCompleted
                                     }
@@ -321,12 +459,6 @@ fun SearchMainScreen(navController: NavHostController) {
                     Column(
                         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp)
                     ) {
-                        var selectedWeek by remember { mutableStateOf(true) }
-                        var selectedYear by remember { mutableStateOf(false) }
-                        var selectedAZ by remember { mutableStateOf(false) }
-                        var selectedZA by remember { mutableStateOf(false) }
-                        var selectedRank by remember { mutableStateOf(false) }
-
                         Text(
                             text = "Sort",
                             modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp)
@@ -420,7 +552,6 @@ fun SearchMainScreen(navController: NavHostController) {
                         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp)
                     ) {
                         var dropdownShowMenu by remember { mutableStateOf(false) }
-                        var dropdownSelectedItem by remember { mutableStateOf("") }
 
                         LaunchedEffect(Unit) {
                             getSeasonList()
@@ -442,7 +573,7 @@ fun SearchMainScreen(navController: NavHostController) {
                                     .fillMaxWidth()
                                     .height(60.dp),
                                 readOnly = true,
-                                value = dropdownSelectedItem,
+                                value = selectedSeason,
                                 onValueChange = { },
                                 label = { },
                                 trailingIcon = {
@@ -471,7 +602,10 @@ fun SearchMainScreen(navController: NavHostController) {
                                     DropdownMenuItem(
                                         enabled = true,
                                         onClick = {
-                                            dropdownSelectedItem = item
+                                            selectedSeason = item
+                                            seasonInput = item
+                                                .lowercase(Locale.ROOT)
+                                                .replace(" ", "-")
                                             dropdownShowMenu = false
                                         },
                                         text = { Text(text = item) },
@@ -488,8 +622,6 @@ fun SearchMainScreen(navController: NavHostController) {
                         modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 0.dp)
                     ) {
                         var dropdownShowMenu by remember { mutableStateOf(false) }
-                        var dropdownSelectedItem by remember { mutableStateOf("") }
-                        var selectedGenres = remember { mutableStateListOf<String>() }
 
                         Text(
                             text = "Genres",
@@ -506,7 +638,7 @@ fun SearchMainScreen(navController: NavHostController) {
                                     .fillMaxWidth()
                                     .height(60.dp),
                                 readOnly = true,
-                                value = dropdownSelectedItem,
+                                value = selectedGenre,
                                 onValueChange = { },
                                 label = { },
                                 trailingIcon = {
@@ -535,7 +667,7 @@ fun SearchMainScreen(navController: NavHostController) {
                                     DropdownMenuItem(
                                         enabled = true,
                                         onClick = {
-                                            dropdownSelectedItem = item
+                                            selectedGenre = item
                                             selectedGenres.add(item)
                                             dropdownShowMenu = false
                                         },
@@ -616,7 +748,7 @@ fun SearchMainScreen(navController: NavHostController) {
         ) {
             items(animeListState) { item->
                 if (animeListState.size != 1) {
-                    AnimeSearchListCard(item)
+                    AnimeSearchListCard(item, navController)
                 }
             }
         }
@@ -626,10 +758,56 @@ fun SearchMainScreen(navController: NavHostController) {
                 snapshotFlow { currentPage }
                     .apply {
                         try {
+                            typeInput =
+                                if (selectedAllType) {
+                                    ""
+                                }
+                                else if (selectedSub) {
+                                    "0"
+                                }
+                                else if(selectedDub) {
+                                    "1"
+                                }
+                                else {
+                                    "2"
+                                }
+
+                            airingInput =
+                                if (selectedAllAiring) {
+                                    ""
+                                }
+                                else if (selectedOngoing) {
+                                    "1"
+                                }
+                                else {
+                                    "0"
+                                }
+
+                            sortInput =
+                                if (selectedWeek) {
+                                    "popular-week"
+                                }
+                                else if (selectedYear) {
+                                    "popular-year"
+                                }
+                                else if (selectedAZ) {
+                                    "az"
+                                }
+                                else if (selectedZA) {
+                                    "za"
+                                }
+                                else {
+                                    "ranking"
+                                }
+
+                            genresInput = selectedGenres
+
                             getAnimeList(
                                 search = searchTextInput.text,
                                 season = seasonInput,
-                                genres = "",
+                                genres = genresInput
+                                    .joinToString(separator = ",")
+                                    .lowercase(Locale.ENGLISH),
                                 dub = typeInput,
                                 airing = airingInput,
                                 sort = sortInput,
@@ -645,7 +823,7 @@ fun SearchMainScreen(navController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnimeSearchListCard(anime: List<String>) {
+fun AnimeSearchListCard(anime: List<String>, navController: NavHostController) {
     // [[Anime Title, Anime ID, ANIME THUMBNAIL, SUB OR DUB (sub=0, dub=1]]
     val title = anime[0].replace("\"", "")
     val id = anime[1]
@@ -657,8 +835,7 @@ fun AnimeSearchListCard(anime: List<String>) {
             .height(220.dp)
             .width(160.dp),
         shape = RoundedCornerShape(18.dp),
-        onClick = { //navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id")
-            }
+        onClick = { navController.navigate("${AnimeDetailsScreenNav.AnimeDetails.route}/$id") }
     ) {
         Box {
             Image(
