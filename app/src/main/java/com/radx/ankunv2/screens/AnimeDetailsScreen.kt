@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.google.accompanist.flowlayout.FlowRow
 import com.radx.ankunv2.anime.AnimeDetails
 import com.radx.ankunv2.anime.Utils
 import com.radx.ankunv2.ui.theme.BrightGrey
@@ -286,12 +287,13 @@ fun Bottom(
             .fillMaxSize()
     ) {
         // genre
-        LazyRow (
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        FlowRow(
             modifier = Modifier
-                .padding(0.dp, 0.dp, 0.dp, 16.dp)
+                .padding(0.dp, 0.dp, 0.dp, 16.dp),
+            mainAxisSpacing = 8.dp,
+            crossAxisSpacing = 8.dp
         ) {
-            items(genreItemsState) { item ->
+            genreItemsState.forEach { item ->
                 // each genre
                 if (genreItemsState.size != 1) {
                     GenreCardItem(item)
