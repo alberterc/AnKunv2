@@ -68,9 +68,12 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
-    // Google Accompanist for HorizontalPager
-    implementation "com.google.accompanist:accompanist-pager:0.24.1-alpha"
+    // Google Accompanist
+    // pager for horizontal pager
+    implementation "com.google.accompanist:accompanist-pager:0.24.1-alpha" //using older ver because of slider automation bug
     implementation "androidx.compose.ui:ui-util:$compose_version"
+    // flow layouts
+    implementation "com.google.accompanist:accompanist-flowlayout:0.26.5-rc"
 
     // jsoup for HTML scraping
     implementation 'org.jsoup:jsoup:1.15.3'
