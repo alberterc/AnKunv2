@@ -78,6 +78,9 @@ dependencies {
     // jsoup for HTML scraping
     implementation 'org.jsoup:jsoup:1.15.3'
 
+    // exoplayer
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.1'
+
     // Coil for image loading from URL
     implementation "io.coil-kt:coil-compose:2.2.2"
 }
