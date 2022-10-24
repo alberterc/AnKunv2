@@ -34,6 +34,7 @@ object Utils {
 
 sealed class AnimeDetailsScreenNav(var route: String) {
     object AnimeDetails: AnimeDetailsScreenNav("anime_details")
+    object AnimeEpisodeStream: AnimeDetailsScreenNav("anime_episode_stream")
 }
 
 @Composable
