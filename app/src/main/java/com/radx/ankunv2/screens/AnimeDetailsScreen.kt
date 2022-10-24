@@ -22,10 +22,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import com.radx.ankunv2.anime.AnimeDetails
+import com.radx.ankunv2.anime.AnimeDetailsScreenNav
 import com.radx.ankunv2.anime.Utils
+import com.radx.ankunv2.screens.videoplayer.AnimeVideoScreen
 import com.radx.ankunv2.ui.theme.BrightGrey
 import com.radx.ankunv2.ui.theme.Grey
 import com.radx.ankunv2.ui.theme.Transparent
@@ -33,7 +41,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-fun AnimeDetailsScreen(animeID: String) {
+fun AnimeDetailsNavigationHost(animeID: String, navController: NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = AnimeDetailsScreenNav.AnimeDetails.route
+    ) {
+        composable(route = AnimeDetailsScreenNav.AnimeDetails.route) { MainScreen(animeID = animeID, navController = navController) }
+        composable(
+            route = "${AnimeDetailsScreenNav.AnimeEpisodeStream.route}/{episodeID}",
+            arguments = listOf(navArgument("episodeID") {
+                type = NavType.StringType
+            })
+        ) {
+            AnimeVideoScreen(it.arguments!!.getString("episodeID")!!)
+        }
+    }
+}
+
+@Composable
+fun AnimeDetailsScreen(animeID: String = "") {
+    val navController = rememberNavController()
+    AnimeDetailsNavigationHost(animeID = animeID, navController = navController)
+}
+
+@Composable
+fun MainScreen(animeID: String, navController: NavHostController) {
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
@@ -79,7 +111,8 @@ fun AnimeDetailsScreen(animeID: String) {
                 .height(bottomHeight - 75.dp),
             genreItemsState,
             animeDetailsState,
-            animeEpisodesItemsState
+            animeEpisodesItemsState,
+            navController
         )
 
         Center(
@@ -275,7 +308,8 @@ fun Bottom(
     modifier: Modifier,
     genreItemsState: List<String>,
     animeDetailsState: Map<String, String>,
-    animeEpisodesItemsState: List<List<String>>
+    animeEpisodesItemsState: List<List<String>>,
+    navController: NavHostController
 ) {
     val description = if (animeDetailsState["description"] == null) "" else animeDetailsState["description"]!!
 
@@ -328,7 +362,7 @@ fun Bottom(
             items(animeEpisodesItemsState) { item ->
                 // each episode card
                 if (item.size != 1) {
-                    EpisodeCardItem(item, animeEpisodesItemsState)
+                    EpisodeCardItem(item, animeEpisodesItemsState, navController = navController)
                 }
             }
         }
@@ -360,7 +394,7 @@ fun GenreCardItem(genre: String) {
 }
 
 @Composable
-fun EpisodeCardItem(episode: List<String>, animeEpisodesItemsState: List<List<String>>) {
+fun EpisodeCardItem(episode: List<String>, animeEpisodesItemsState: List<List<String>>, navController: NavHostController) {
     // [[UNKNOWN, EPISODE ID, EPISODE NUMBER, EPISODE RELEASE TIME]]
     val id = episode[1]
     val num = episode[2]
@@ -401,7 +435,9 @@ fun EpisodeCardItem(episode: List<String>, animeEpisodesItemsState: List<List<St
 
     FilledTonalButton(
         enabled =  true,
-        onClick = { },
+        onClick = {
+            navController.navigate("${AnimeDetailsScreenNav.AnimeEpisodeStream.route}/$id")
+        },
         modifier = Modifier
             .width(130.dp),
         content = {
@@ -410,7 +446,7 @@ fun EpisodeCardItem(episode: List<String>, animeEpisodesItemsState: List<List<St
                     text = "Episode " + num,
                     fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(0.dp, 0.dp, 0.dp, 0.dp),
+                        .padding(0.dp, 0.dp, 0.dp, 0.dp)
                 )
                 Text(
                     text = releaseTime,
