@@ -1,5 +1,8 @@
-package com.radx.ankunv2.anime
+package com.radx.ankunv2
 
+import android.content.Context
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -17,7 +20,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.radx.ankunv2.R
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import org.apache.commons.lang3.time.DateUtils
 import java.util.*
 
@@ -29,6 +34,41 @@ object Utils {
         val releasedDate = DateUtils.round(Date(epochTime.toLong() * 1000), Calendar.MINUTE)
 
         return currDate.time - releasedDate.time
+    }
+
+    fun toast(context: Context, message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun readFavoriteIds(context: Context): MutableList<String> {
+        val animeIDs = mutableListOf<String>()
+        val firebaseAuth = Firebase.auth
+        val firebaseDatabase = Firebase.firestore
+
+        // read all favorite anime ids
+        firebaseDatabase.collection("users")
+            .document(firebaseAuth.currentUser!!.uid)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    try {
+                        val ids: List<String> = document.data!!.values.toMutableList()[0] as List<String>
+                        // add all existing anime id
+                        ids.forEach {
+                            animeIDs.add(it)
+                        }
+                    } catch (_: IndexOutOfBoundsException) {}
+                }
+                else {
+                    toast(context, "No Docs")
+                }
+            }
+            .addOnFailureListener {
+                toast(context, "Failed to retrieve data.")
+            }
+
+        return animeIDs
     }
 }
 
