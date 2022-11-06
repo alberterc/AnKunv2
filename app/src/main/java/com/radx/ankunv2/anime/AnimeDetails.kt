@@ -1,5 +1,6 @@
 package com.radx.ankunv2.anime
 
+import com.radx.ankunv2.Utils
 import org.jsoup.Jsoup
 import java.net.URL
 
@@ -7,6 +8,19 @@ object AnimeDetails {
     private var animeDetailsMap: MutableMap<String, String> = mutableMapOf()
     private var animeEpisodesList: List<List<String>> = mutableListOf()
     private var animeGenreList: List<String> = listOf("")
+
+    fun getAnimeDetailsShorten(animeID: String): Map<String, String> {
+        try {
+            animeDetailsResponse(animeID = animeID)
+        } catch (ignored: IndexOutOfBoundsException) {}
+        return mapOf(
+            "title" to this.animeDetailsMap["title"]!!,
+            "id" to animeID,
+            "small thumbnail" to this.animeDetailsMap["small thumbnail"]!!,
+            "type" to this.animeDetailsMap["type"]!!,
+            "episode count" to this.animeDetailsMap["episode count"]!!
+        )
+    }
 
     fun getAnimeDetailsList(animeID: String): Map<String, String> {
         try {
