@@ -22,7 +22,8 @@ import com.radx.ankunv2.screens.home.HomeScreen
 import com.radx.ankunv2.screens.profile.ProfileScreen
 import com.radx.ankunv2.screens.search.SearchScreen
 import com.radx.ankunv2.screens.season.SeasonScreen
-import com.radx.ankunv2.screens.intro.IntroActivity
+import com.radx.ankunv2.intro.IntroActivity
+import com.radx.ankunv2.screens.favorites.FavoritesScreen
 import com.radx.ankunv2.ui.theme.AnKunv2Theme
 
 
