@@ -24,9 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.radx.ankunv2.screens.intro.IntroActivity
-import com.radx.ankunv2.screens.intro.IntroMenus
-import com.radx.ankunv2.screens.intro.SignInScreen
+import com.radx.ankunv2.intro.IntroActivity
 import com.radx.ankunv2.ui.theme.Grey
 
 @Composable
