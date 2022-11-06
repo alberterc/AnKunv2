@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "874050213998",
+    "project_id": "ankun-acbac",
+    "storage_bucket": "ankun-acbac.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874050213998:android:54f41da4713adc5e92ee7f",
+        "android_client_info": {
+          "package_name": "com.radx.ankunv2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "874050213998-p9d62chpv1i8heto417ftefiuv7ors3o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.radx.ankunv2",
+            "certificate_hash": "4d29f5abf945b80c488bd1e524253b0f8647c414"
+          }
+        },
+        {
+          "client_id": "874050213998-kc8vdqgjg2921ctp4bdv59ap84e7fnr7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCRUcyyrzLzP76t5OQE6GFWzk25YVlqLE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "874050213998-kc8vdqgjg2921ctp4bdv59ap84e7fnr7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

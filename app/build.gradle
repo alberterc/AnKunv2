@@ -1,6 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    // Google services Gradle plugin (Firebase)
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -83,4 +85,12 @@ dependencies {
 
     // Coil for image loading from URL
     implementation "io.coil-kt:coil-compose:2.2.2"
+
+    // Rating Bar
+    implementation 'com.github.a914-gowtham:compose-ratingbar:1.2.4'
+
+    // Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:31.0.2')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
 }
