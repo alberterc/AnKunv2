@@ -1,5 +1,6 @@
 package com.radx.ankunv2.anime
 
+import com.radx.ankunv2.Utils
 import java.net.URL
 
 object AnimeSearch {
