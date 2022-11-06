@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,8 +29,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.radx.ankunv2.AnimeDetailsScreenNav
+import com.radx.ankunv2.Utils.readFavoriteIds
+import com.radx.ankunv2.Utils.toast
 import com.radx.ankunv2.anime.AnimeDetails
-import com.radx.ankunv2.anime.AnimeDetailsScreenNav
 import com.radx.ankunv2.anime.AnimeSearch
 import com.radx.ankunv2.screens.AnimeDetailsScreen
 import com.radx.ankunv2.ui.theme.BrightGrey
@@ -66,8 +72,16 @@ fun MostPopularScreenNavigationHost(navController: NavHostController) {
     }
 }
 
+private var animeIDs = mutableListOf<String>()
+
+@Suppress("UNCHECKED_CAST")
 @Composable
 fun MostPopularScreen(navController: NavHostController, popularType: String, page: String) {
+    val context = LocalContext.current
+
+    // get favorite id from firestore
+    animeIDs = readFavoriteIds(context)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -181,13 +195,19 @@ fun MostPopularScreen(navController: NavHostController, popularType: String, pag
 @Composable
 fun AnimeMostPopularDetailedCardItem(anime: List<String>, navController: NavHostController) {
     // [[Anime Title, Anime ID, ANIME THUMBNAIL, SUB OR DUB (sub=0, dub=1]]
-    val favoriteState by remember { mutableStateOf(false) }
+    var favoriteState by remember { mutableStateOf(false) }
     val title = anime[0].replace("\"", "")
     val id = anime[1]
     val thumbnail = anime[2].replace("\"", "")
     val isDub = anime[3]
 
+    val firebaseAuth = Firebase.auth
+    val firebaseDatabase = Firebase.firestore
+    val context = LocalContext.current
+
     var genreItemsState by remember { mutableStateOf(listOf("")) }
+
+    favoriteState = animeIDs.contains(id)
 
     LaunchedEffect(Unit) {
         getGenreItemsList(id)
@@ -273,7 +293,21 @@ fun AnimeMostPopularDetailedCardItem(anime: List<String>, navController: NavHost
             if (!favoriteState) {
                 Button(
                     enabled =  true,
-                    onClick = { },
+                    onClick = {
+                        // add new anime id
+                        animeIDs.add(id)
+
+                        val data = hashMapOf(
+                            "animeIDs" to animeIDs
+                        )
+
+                        // overwrite anime id data in firestore
+                        firebaseDatabase.collection("users")
+                            .document(firebaseAuth.currentUser!!.uid)
+                            .set(data)
+                            .addOnSuccessListener { favoriteState = !favoriteState }
+                            .addOnFailureListener { toast(context, "Failed to add anime.") }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
                     modifier = Modifier
                         .width(135.dp),
@@ -304,7 +338,19 @@ fun AnimeMostPopularDetailedCardItem(anime: List<String>, navController: NavHost
             else {
                 OutlinedButton(
                     enabled =  true,
-                    onClick = { },
+                    onClick = {
+                        animeIDs.remove(id)
+                        val data = hashMapOf(
+                            "animeIDs" to animeIDs
+                        )
+
+                        // overwrite anime id data in firestore
+                        firebaseDatabase.collection("users")
+                            .document(firebaseAuth.currentUser!!.uid)
+                            .set(data)
+                            .addOnSuccessListener { favoriteState = !favoriteState }
+                            .addOnFailureListener { toast(context, "Failed to add anime.") }
+                    },
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
