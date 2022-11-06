@@ -1,10 +1,7 @@
-package com.radx.ankunv2.screens.intro
+package com.radx.ankunv2.intro
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -33,8 +30,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.radx.ankunv2.AnKunApp
 import com.radx.ankunv2.MainActivity
+import com.radx.ankunv2.Utils.toast
 import com.radx.ankunv2.ui.theme.AnKunv2Theme
 import com.radx.ankunv2.ui.theme.Grey
 import com.radx.ankunv2.ui.theme.Transparent
@@ -342,8 +339,4 @@ fun SignUpScreen(navController: NavHostController) {
             }
         )
     }
-}
-
-private fun toast(context: Context, message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
