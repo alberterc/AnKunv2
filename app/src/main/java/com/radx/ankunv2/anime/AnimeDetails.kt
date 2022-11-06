@@ -1,6 +1,7 @@
 package com.radx.ankunv2.anime
 
 import com.radx.ankunv2.Utils
+import com.radx.ankunv2.screens.search.animeList
 import org.jsoup.Jsoup
 import java.net.URL
 
@@ -9,17 +10,22 @@ object AnimeDetails {
     private var animeEpisodesList: List<List<String>> = mutableListOf()
     private var animeGenreList: List<String> = listOf("")
 
-    fun getAnimeDetailsShorten(animeID: String): Map<String, String> {
+    fun getAnimeDetailsForSeveralIDs(animeIDs: List<String>): List<Map<String, String>> {
+        val animeList = mutableListOf<Map<String, String>>()
         try {
-            animeDetailsResponse(animeID = animeID)
+            animeIDs.forEach { animeID ->
+                animeDetailsResponse(animeID = animeID)
+                val animeDetails = mapOf(
+                    "title" to this.animeDetailsMap["title"]!!,
+                    "id" to animeID,
+                    "small thumbnail" to this.animeDetailsMap["small thumbnail"]!!,
+                    "type" to this.animeDetailsMap["type"]!!,
+                    "episode count" to animeDetailsMap["episode count"]!!
+                )
+                animeList.add(animeDetails)
+            }
         } catch (ignored: IndexOutOfBoundsException) {}
-        return mapOf(
-            "title" to this.animeDetailsMap["title"]!!,
-            "id" to animeID,
-            "small thumbnail" to this.animeDetailsMap["small thumbnail"]!!,
-            "type" to this.animeDetailsMap["type"]!!,
-            "episode count" to this.animeDetailsMap["episode count"]!!
-        )
+        return animeList
     }
 
     fun getAnimeDetailsList(animeID: String): Map<String, String> {
