@@ -34,6 +34,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.calculateCurrentOffsetForPage
 import com.google.accompanist.pager.rememberPagerState
+import com.radx.ankunv2.AnimeDetailsScreenNav
 import com.radx.ankunv2.anime.*
 import com.radx.ankunv2.screens.AnimeDetailsScreen
 import com.radx.ankunv2.ui.theme.Transparent
