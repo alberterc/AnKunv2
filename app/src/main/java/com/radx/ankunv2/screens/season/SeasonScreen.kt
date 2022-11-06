@@ -25,7 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
-import com.radx.ankunv2.anime.AnimeDetailsScreenNav
+import com.radx.ankunv2.AnimeDetailsScreenNav
 import com.radx.ankunv2.anime.AnimeSearch
 import com.radx.ankunv2.anime.AnimeSeasons
 import com.radx.ankunv2.screens.AnimeDetailsScreen

@@ -41,7 +41,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
-import com.radx.ankunv2.anime.AnimeDetailsScreenNav
+import com.radx.ankunv2.AnimeDetailsScreenNav
 import com.radx.ankunv2.anime.AnimeGenre
 import com.radx.ankunv2.anime.AnimeSearch
 import com.radx.ankunv2.anime.AnimeSeasons
