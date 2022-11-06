@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -30,9 +31,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.radx.ankunv2.anime.AnimeDetails
-import com.radx.ankunv2.anime.AnimeDetailsScreenNav
-import com.radx.ankunv2.anime.Utils
+import com.radx.ankunv2.AnimeDetailsScreenNav
+import com.radx.ankunv2.Utils
+import com.radx.ankunv2.Utils.readFavoriteIds
+import com.radx.ankunv2.Utils.toast
 import com.radx.ankunv2.screens.videoplayer.AnimeVideoScreen
 import com.radx.ankunv2.ui.theme.BrightGrey
 import com.radx.ankunv2.ui.theme.Grey
@@ -58,10 +64,16 @@ fun AnimeDetailsNavigationHost(animeID: String, navController: NavHostController
     }
 }
 
+private var animeIDs = mutableListOf<String>()
+
 @Composable
 fun AnimeDetailsScreen(animeID: String = "") {
     val navController = rememberNavController()
     AnimeDetailsNavigationHost(animeID = animeID, navController = navController)
+
+    val context = LocalContext.current
+    // get favorite id from firestore
+    animeIDs = readFavoriteIds(context)
 }
 
 @Composable
@@ -121,7 +133,8 @@ fun MainScreen(animeID: String, navController: NavHostController) {
                 .fillMaxWidth()
                 .height(centerHeight)
                 .align(Alignment.BottomCenter),
-            animeDetailsState
+            animeDetailsState,
+            animeID
         )
     }
 }
@@ -166,13 +179,19 @@ fun Top(modifier: Modifier, animeDetailsState: Map<String, String>) {
 
 // small thumbnail and title, etc
 @Composable
-fun Center(modifier: Modifier, animeDetailsState: Map<String, String>) {
-    val favoriteState by remember { mutableStateOf(false) }
+fun Center(modifier: Modifier, animeDetailsState: Map<String, String>, animeID: String) {
+    var favoriteState by remember { mutableStateOf(false) }
 
     val thumbnail = if (animeDetailsState["small thumbnail"] == null) "" else animeDetailsState["small thumbnail"]!!
     val title = if (animeDetailsState["title"] == null) "" else animeDetailsState["title"]!!
     val status = if (animeDetailsState["status"] == null) "" else animeDetailsState["status"]!!
     val season = if (animeDetailsState["season"] == null) "" else animeDetailsState["season"]!!
+
+    val firebaseAuth = Firebase.auth
+    val firebaseDatabase = Firebase.firestore
+    val context = LocalContext.current
+
+    favoriteState = animeIDs.contains(animeID)
 
     Column(
         modifier.background(Color.Transparent)
@@ -274,7 +293,21 @@ fun Center(modifier: Modifier, animeDetailsState: Map<String, String>) {
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                            onClick = { }
+                                            onClick = {
+                                                // add new anime id
+                                                animeIDs.add(animeID)
+
+                                                val data = hashMapOf(
+                                                    "animeIDs" to animeIDs
+                                                )
+
+                                                // overwrite anime id data in firestore
+                                                firebaseDatabase.collection("users")
+                                                    .document(firebaseAuth.currentUser!!.uid)
+                                                    .set(data)
+                                                    .addOnSuccessListener { favoriteState = !favoriteState }
+                                                    .addOnFailureListener { toast(context, "Failed to add anime.") }
+                                            }
                                         )
                                 )
                             }
@@ -286,7 +319,19 @@ fun Center(modifier: Modifier, animeDetailsState: Map<String, String>) {
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = rememberRipple(color = MaterialTheme.colorScheme.secondary),
-                                            onClick = { }
+                                            onClick = {
+                                                animeIDs.remove(animeID)
+                                                val data = hashMapOf(
+                                                    "animeIDs" to animeIDs
+                                                )
+
+                                                // overwrite anime id data in firestore
+                                                firebaseDatabase.collection("users")
+                                                    .document(firebaseAuth.currentUser!!.uid)
+                                                    .set(data)
+                                                    .addOnSuccessListener { favoriteState = !favoriteState }
+                                                    .addOnFailureListener { toast(context, "Failed to add anime.") }
+                                            }
                                         )
                                 )
                             }
@@ -466,7 +511,7 @@ fun fillGenreItemsList(animeID: String) {
     genreItems = AnimeDetails.getAnimeGenreList(animeID = animeID)
 }
 
-var animeDetails = mapOf(
+private var animeDetails = mapOf(
     "title" to "",
     "description" to "",
     "status" to "",
