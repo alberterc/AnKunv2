@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.radx.ankunv2.AnimeDetailsScreenNav
+import com.radx.ankunv2.Utils
+import com.radx.ankunv2.Utils.toast
 import com.radx.ankunv2.anime.*
 import com.radx.ankunv2.screens.AnimeDetailsScreen
 import com.radx.ankunv2.ui.theme.BrightGrey
@@ -64,8 +71,15 @@ fun RecentUpdatesNavigationHost(navController: NavHostController) {
     }
 }
 
+private var animeIDs = mutableListOf<String>()
+
 @Composable
 fun RecentUpdatesScreen(navController: NavHostController, isDub: String, page: String) {
+    val context = LocalContext.current
+
+    // get favorite id from firestore
+    animeIDs = Utils.readFavoriteIds(context)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -218,8 +232,14 @@ fun AnimeRecentUpdatesDetailedCardItem(anime: List<String>, navController: NavHo
         lastReleaseTime = "Just Released"
     }
 
-    val favoriteState by remember { mutableStateOf(false) }
+    var favoriteState by remember { mutableStateOf(false) }
     var genreItemsState by remember { mutableStateOf(listOf("")) }
+
+    val firebaseAuth = Firebase.auth
+    val firebaseDatabase = Firebase.firestore
+    val context = LocalContext.current
+
+    favoriteState = animeIDs.contains(id)
 
     LaunchedEffect(Unit) {
         getGenreRecentItemsList(id)
@@ -316,7 +336,21 @@ fun AnimeRecentUpdatesDetailedCardItem(anime: List<String>, navController: NavHo
             if (!favoriteState) {
                 Button(
                     enabled =  true,
-                    onClick = { },
+                    onClick = {
+                        // add new anime id
+                        animeIDs.add(id)
+
+                        val data = hashMapOf(
+                            "animeIDs" to animeIDs
+                        )
+
+                        // overwrite anime id data in firestore
+                        firebaseDatabase.collection("users")
+                            .document(firebaseAuth.currentUser!!.uid)
+                            .set(data)
+                            .addOnSuccessListener { favoriteState = !favoriteState }
+                            .addOnFailureListener { toast(context, "Failed to add anime.") }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSecondaryContainer),
                     modifier = Modifier
                         .width(135.dp),
@@ -347,7 +381,19 @@ fun AnimeRecentUpdatesDetailedCardItem(anime: List<String>, navController: NavHo
             else {
                 OutlinedButton(
                     enabled =  true,
-                    onClick = { },
+                    onClick = {
+                        animeIDs.remove(id)
+                        val data = hashMapOf(
+                            "animeIDs" to animeIDs
+                        )
+
+                        // overwrite anime id data in firestore
+                        firebaseDatabase.collection("users")
+                            .document(firebaseAuth.currentUser!!.uid)
+                            .set(data)
+                            .addOnSuccessListener { favoriteState = !favoriteState }
+                            .addOnFailureListener { toast(context, "Failed to add anime.") }
+                    },
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ),
