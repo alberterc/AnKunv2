@@ -56,16 +56,6 @@ fun FavoritesScreen() {
     }
 }
 
-@Composable
-fun ProfileScreen() {
-    Column {
-        Text(
-            text = "Profile Screen",
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-    }
-}
-
 //@Preview(showBackground = true)
 //@Composable
 //fun PreviewHomeScreen() {
