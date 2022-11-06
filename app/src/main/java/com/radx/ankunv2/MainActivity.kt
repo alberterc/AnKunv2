@@ -1,5 +1,6 @@
 package com.radx.ankunv2
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,17 +16,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.radx.ankunv2.screens.home.HomeScreen
+import com.radx.ankunv2.screens.profile.ProfileScreen
 import com.radx.ankunv2.screens.search.SearchScreen
 import com.radx.ankunv2.screens.season.SeasonScreen
+import com.radx.ankunv2.screens.intro.IntroActivity
 import com.radx.ankunv2.ui.theme.AnKunv2Theme
 
 
 class MainActivity : ComponentActivity() {
+    private val firebaseAuth = Firebase.auth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            AnKunApp()
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser != null) {
+            setContent {
+                AnKunApp()
+            }
+        }
+        else {
+            startActivity(
+                Intent(applicationContext, IntroActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            )
         }
     }
 }
