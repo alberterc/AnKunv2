@@ -22,4 +22,4 @@ Updated from [AnKun](https://github.com/RadXGH/AnKun) using Jetpack Compose.
 <img src="readme_assets/anime_details.jpg" width="250"/>
 
 # Developers
-Albert E (vradnisntlong@gmail.com)
+Albert E (albertenrico.5@gmail.com)
