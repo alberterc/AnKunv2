@@ -20,6 +20,3 @@ Updated from [AnKun](https://github.com/RadXGH/AnKun) using Jetpack Compose.
 <img src="readme_assets/home2.jpg" width="250"/>
 <img src="readme_assets/season.jpg" width="250"/>
 <img src="readme_assets/anime_details.jpg" width="250"/>
-
-# Developers
-Albert E (albertenrico.5@gmail.com)
