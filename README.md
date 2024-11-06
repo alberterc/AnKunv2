@@ -1,5 +1,6 @@
 # AnKunv2
 ### ***Has a more recent version built with Flutter [AnKunv2-flutter](https://github.com/alberterc/AnKunv2-flutter).***
+***The API used is not maintained by me and may cause issues.***
 
 AnKunv2 is an app a bit similar to YouTube but to stream anime.
 
